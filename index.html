@@ -2,396 +2,243 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>zamsh. studio</title>
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#f4f0eb">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>zamsh. studio - Generator Grafik</title>
   <style>
     :root {
       --bg-color: #f7f5f0;
       --card-bg: #ffffff;
-      --accent-color: #2b2927;
+      --text-color: #2b2927;
       --text-muted: #8c857b;
+      --accent-color: #2b2927;
       --border-color: #e6e1d8;
-      --radius: 16px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg-color); color: var(--accent-color); padding: 16px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-
-    .app-header { text-align: center; margin: 20px 0 16px; }
-    .app-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 400; letter-spacing: 2px; text-transform: lowercase; }
-
-    /* Nav Tabs */
-    .nav-tabs { display: flex; background: #eae6df; padding: 4px; border-radius: 30px; margin-bottom: 20px; width: 100%; max-width: 440px; gap: 4px; }
-    .tab-btn { flex: 1; border: none; background: transparent; padding: 10px 8px; border-radius: 25px; font-size: 12px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
-    .tab-btn.active { background: var(--card-bg); color: var(--accent-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-
-    .container { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 16px; }
-    .card { background: var(--card-bg); border-radius: var(--radius); padding: 20px; border: 1px solid var(--border-color); box-shadow: 0 4px 16px rgba(0,0,0,0.02); }
-
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    .form-group { margin-bottom: 16px; }
-    label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
-    
-    input[type="text"], textarea, select {
-      width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 10px; background: #faf8f5; font-size: 14px; color: var(--accent-color); outline: none; transition: border-color 0.2s;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
     }
-    input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--accent-color); }
 
-    /* Photo Upload Grid */
-    .photo-upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .upload-box {
-      border: 1.5px dashed var(--border-color); border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; position: relative; background: #faf8f5; transition: all 0.2s; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
-    .upload-box input[type="file"] { position: absolute; top:0; left:0; width:100%; height:100%; opacity: 0; cursor: pointer; }
-    .upload-box img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; border-radius: 10px; }
-    .upload-box span { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 6px; }
 
-    /* Schedule Slots */
-    .schedule-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-    .schedule-row input { flex: 1; }
-    .btn-remove { background: #e57373; color: white; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 18px; line-height: 1; flex-shrink: 0; }
-    
-    .actions-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-    .actions-buttons { display: flex; gap: 8px; }
-    .btn-secondary { flex: 1; background: #eae6df; color: var(--accent-color); border: none; padding: 10px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
-    .btn-booksy { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
-    .btn-clear { background: #f0e2e2; color: #a94444; border: none; padding: 10px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
-
-    .btn-primary {
-      width: 100%; padding: 14px; background: var(--accent-color); color: #fff; border: none; border-radius: 12px; font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: opacity 0.2s;
+    h1 {
+      font-family: Georgia, serif;
+      text-align: center;
+      margin-bottom: 24px;
+      font-weight: normal;
+      letter-spacing: 1px;
     }
-    .btn-primary:active { opacity: 0.85; }
 
-    /* Preview Section - Wymuszenie jasnego tła dla podglądu */
-    .preview-card { text-align: center; display: none; background: #ffffff; }
-    .preview-img { width: 100%; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 10px; background-color: #f7f5f0; min-height: 200px; display: block; object-fit: contain; }
-    
-    .spinner { display: none; margin: 20px auto; border: 3px solid #f3f3f3; border-top: 3px solid var(--accent-color); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .section {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      color: var(--text-color);
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      background-color: #faf9f6;
+    }
+
+    .slot-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .slot-row input { margin-bottom: 0; }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--accent-color);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-top: 5px;
+    }
+
+    button:hover { opacity: 0.9; }
+    button.secondary {
+      background-color: transparent;
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      margin-bottom: 15px;
+    }
+
+    .preview-area {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .preview-area img {
+      max-width: 100%;
+      max-height: 500px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      display: none;
+      margin: 15px auto;
+    }
+
+    #status {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
 
-  <div class="app-header">
-    <h1>zamsh. studio</h1>
-  </div>
+<div class="container">
+  <h1>zamsh. studio</h1>
 
-  <!-- Nawigacja Zakładek -->
-  <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('beforeAfter')">Przed & Po</button>
-    <button class="tab-btn" onclick="switchTab('schedule')">Wolne Terminy</button>
-    <button class="tab-btn" onclick="switchTab('classic')">Standard</button>
-  </div>
+  <!-- WOLNE TERMINY -->
+  <div class="section">
+    <h2>1. Wolne Terminy (InstaStory)</h2>
+    <button class="secondary" onclick="fetchBooksy()">Pobierz dane z Booksy</button>
 
-  <div class="container">
-    
-    <!-- MODULE 1: PRZED I PO -->
-    <div id="tab-beforeAfter" class="tab-content active">
-      <div class="card">
-        <form id="baForm">
-          <div class="form-group">
-            <label>Zdjęcia (Przed / Po)</label>
-            <div class="photo-upload-grid">
-              <div class="upload-box" id="boxBefore">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 4.5v15m7.5-7.5h-15"></path></svg>
-                <span>Przed</span>
-                <input type="file" id="fileBefore" accept="image/*" required onchange="handleFilePreview(this, 'boxBefore')">
-              </div>
+    <label>Nagłówek</label>
+    <input type="text" id="scheduleHeader" value="Wolne Terminy">
 
-              <div class="upload-box" id="boxAfter">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 4.5v15m7.5-7.5h-15"></path></svg>
-                <span>Po</span>
-                <input type="file" id="fileAfter" accept="image/*" required onchange="handleFilePreview(this, 'boxAfter')">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Format Grafiki</label>
-            <select id="baAspect">
-              <option value="1:1">Kwadrat (1:1) - Post</option>
-              <option value="9:16" selected>Pionowy (9:16) - Story</option>
-              <option value="4:5">Portret (4:5) - Feed</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Podpis (Opcjonalny)</label>
-            <input type="text" id="baTitle" placeholder="np. Laminacja Brwi">
-          </div>
-
-          <button type="submit" class="btn-primary">Generuj Przed & Po</button>
-        </form>
+    <div id="slotsContainer">
+      <div class="slot-row">
+        <input type="text" class="slot-day" placeholder="Dzień (np. Poniedziałek 28.09)">
+        <input type="text" class="slot-hours" placeholder="Godziny (np. 12:00, 15:00)">
       </div>
     </div>
 
-    <!-- MODULE 2: WOLNE TERMINY -->
-    <div id="tab-schedule" class="tab-content">
-      <div class="card">
-        <form id="scheduleForm" onsubmit="return false;">
-          <div class="form-group">
-            <label>Nagłówek Story</label>
-            <input type="text" id="schedHeader" value="Wolne Terminy" required>
-          </div>
-
-          <div class="form-group">
-            <label>Lista Dni i Godzin</label>
-            <div id="scheduleSlots">
-              <div class="schedule-row">
-                <input type="text" placeholder="np. Poniedziałek 28.09" class="sched-day">
-                <input type="text" placeholder="np. 12:00, 15:30" class="sched-hours">
-              </div>
-            </div>
-            
-            <div class="actions-row">
-              <button type="button" class="btn-booksy" onclick="fetchFromBooksy(event)">
-                ✨ Pobierz wolne terminy z Booksy
-              </button>
-              <div class="actions-buttons">
-                <button type="button" class="btn-secondary" onclick="addScheduleRow()">+ Dodaj dzień</button>
-                <button type="button" class="btn-clear" onclick="clearScheduleRows()">Wyczyść dni</button>
-              </div>
-            </div>
-          </div>
-
-          <button type="button" onclick="submitSchedule()" class="btn-primary">Generuj Grafikę Terminów</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- MODULE 3: STANDARDOWY POST -->
-    <div id="tab-classic" class="tab-content">
-      <div class="card">
-        <form id="postForm">
-          <div class="form-group">
-            <label>Nagłówek Posta</label>
-            <input type="text" id="title" placeholder="np. Subtelne Podkreślenie Piękna" required>
-          </div>
-          <div class="form-group">
-            <label>Podtytuł / Opis</label>
-            <textarea id="subtitle" rows="3" placeholder="Wpisz treść..."></textarea>
-          </div>
-          <button type="submit" class="btn-primary">Generuj Post Classic</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- PREVIEW RESULT -->
-    <div class="card preview-card" id="previewCard">
-      <label>Wygenerowana Grafika</label>
-      <div class="spinner" id="spinner"></div>
-      <img id="resultImg" class="preview-img" src="" alt="Wynik">
-    </div>
-
+    <button type="button" class="secondary" onclick="addSlotRow()">+ Dodaj kolejny dzień</button>
+    <button type="button" onclick="generateSchedule()">Generuj Grafikę Terminów</button>
   </div>
 
-  <script>
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  <!-- PODGLĄD WYGENEROWANEJ GRAFIKI -->
+  <div class="preview-area">
+    <h2>Podgląd / Pobieranie</h2>
+    <p id="status">Wybierz opcję powyżej, aby wygenerować grafikę.</p>
+    <img id="resultImage" alt="Wygenerowana grafika">
+    <a id="downloadBtn" style="display:none;" download="zamsh-grafika.png">
+      <button style="background-color: #4a6b4e; margin-top: 10px;">Pobierz Obraz</button>
+    </a>
+  </div>
+</div>
 
-      if (tabName === 'beforeAfter') {
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        document.getElementById('tab-beforeAfter').classList.add('active');
-      } else if (tabName === 'schedule') {
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('tab-schedule').classList.add('active');
+<script>
+  function addSlotRow(day = '', hours = '') {
+    const container = document.getElementById('slotsContainer');
+    const row = document.createElement('div');
+    row.className = 'slot-row';
+    row.innerHTML = `
+      <input type="text" class="slot-day" placeholder="Dzień" value="${day}">
+      <input type="text" class="slot-hours" placeholder="Godziny" value="${hours}">
+    `;
+    container.appendChild(row);
+  }
+
+  async function fetchBooksy() {
+    const status = document.getElementById('status');
+    status.innerText = 'Pobieranie terminów z Booksy...';
+
+    try {
+      const res = await fetch('/fetch-booksy');
+      const data = await res.json();
+
+      if (data.success && data.slots) {
+        document.getElementById('slotsContainer').innerHTML = '';
+        data.slots.forEach(slot => {
+          addSlotRow(slot.day, slot.hours);
+        });
+        status.innerText = 'Pobrano terminy z Booksy!';
       } else {
-        document.querySelectorAll('.tab-btn')[2].classList.add('active');
-        document.getElementById('tab-classic').classList.add('active');
+        status.innerText = 'Błąd pobierania danych.';
       }
+    } catch (err) {
+      console.error(err);
+      status.innerText = 'Nie udało się połączyć z serwerem.';
     }
+  }
 
-    function handleFilePreview(input, boxId) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const box = document.getElementById(boxId);
-          let existingImg = box.querySelector('img');
-          if(!existingImg) {
-            existingImg = document.createElement('img');
-            box.appendChild(existingImg);
-          }
-          existingImg.src = e.target.result;
-        }
-        reader.readAsDataURL(input.files[0]);
+  async function generateSchedule() {
+    const status = document.getElementById('status');
+    const img = document.getElementById('resultImage');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    status.innerText = 'Generowanie grafiki... Proszę czekać.';
+    img.style.display = 'none';
+    downloadBtn.style.display = 'none';
+
+    const header = document.getElementById('scheduleHeader').value;
+    const days = document.querySelectorAll('.slot-day');
+    const hours = document.querySelectorAll('.slot-hours');
+
+    const slots = [];
+    days.forEach((dayInput, index) => {
+      const dayVal = dayInput.value.trim();
+      const hoursVal = hours[index].value.trim();
+      if (dayVal) {
+        slots.push({ day: dayVal, hours: hoursVal });
       }
-    }
+    });
 
-    function addScheduleRow() {
-      const container = document.getElementById('scheduleSlots');
-      const div = document.createElement('div');
-      div.className = 'schedule-row';
-      div.innerHTML = `
-        <input type="text" placeholder="np. Wtorek 29.09" class="sched-day">
-        <input type="text" placeholder="np. 10:00, 14:00" class="sched-hours">
-        <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
-      `;
-      container.appendChild(div);
-    }
-
-    function clearScheduleRows() {
-      const container = document.getElementById('scheduleSlots');
-      container.innerHTML = `
-        <div class="schedule-row">
-          <input type="text" placeholder="np. Poniedziałek 28.09" class="sched-day">
-          <input type="text" placeholder="np. 12:00, 15:30" class="sched-hours">
-        </div>
-      `;
-    }
-
-    async function fetchFromBooksy(event) {
-      const btn = event.target;
-      const originalText = btn.innerText;
-      btn.innerText = 'Pobieranie z Booksy...';
-      
-      try {
-        const res = await fetch('/fetch-booksy');
-        const data = await res.json();
-        
-        if (data.success && data.slots.length > 0) {
-          const container = document.getElementById('scheduleSlots');
-          container.innerHTML = ''; 
-
-          data.slots.forEach(slot => {
-            const div = document.createElement('div');
-            div.className = 'schedule-row';
-            div.innerHTML = `
-              <input type="text" value="${slot.day}" class="sched-day">
-              <input type="text" value="${slot.hours}" class="sched-hours">
-              <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
-            `;
-            container.appendChild(div);
-          });
-        }
-      } catch (err) {
-        alert('Nie udało się pobrać terminów z Booksy');
-      } finally {
-        btn.innerText = originalText;
-      }
-    }
-
-    async function submitSchedule() {
-      showLoading();
-
-      const header = document.getElementById('schedHeader').value;
-      const days = document.querySelectorAll('.sched-day');
-      const hours = document.querySelectorAll('.sched-hours');
-
-      const items = [];
-      days.forEach((dayInput, index) => {
-        if (dayInput.value.trim()) {
-          items.push({ day: dayInput.value.trim(), hours: hours[index].value.trim() });
-        }
+    try {
+      const res = await fetch('/generate-schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ header, slots })
       });
 
-      if (items.length === 0) {
-        alert('Wpisz przynajmniej jeden dzień!');
-        hideLoading();
-        return;
-      }
+      if (!res.ok) throw new Error('Błąd serwera');
 
-      try {
-        const res = await fetch('/generate-schedule', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ header, slots: items })
-        });
-        
-        if (!res.ok) throw new Error('Błąd serwera');
-        
-        const blob = await res.blob();
-        showResult(URL.createObjectURL(blob));
-      } catch (err) {
-        alert('Błąd generowania');
-        hideLoading();
-      }
-    }
+      const blob = await res.blob();
+      const imageUrl = URL.createObjectURL(blob);
 
-    document.getElementById('baForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const fileBefore = document.getElementById('fileBefore').files[0];
-      const fileAfter = document.getElementById('fileAfter').files[0];
-      const aspect = document.getElementById('baAspect').value;
-      const title = document.getElementById('baTitle').value;
-
-      if (!fileBefore || !fileAfter) {
-        alert('Wybierz oba zdjęcia!');
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('before', fileBefore);
-      formData.append('after', fileAfter);
-      formData.append('aspectRatio', aspect);
-      formData.append('title', title);
-
-      showLoading();
-      try {
-        const res = await fetch('/generate-before-after', { method: 'POST', body: formData });
-        
-        if (!res.ok) throw new Error('Błąd serwera');
-
-        const blob = await res.blob();
-        showResult(URL.createObjectURL(blob));
-      } catch (err) {
-        alert('Błąd generowania');
-        hideLoading();
-      }
-    });
-
-    document.getElementById('postForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      showLoading();
-
-      const title = document.getElementById('title').value;
-      const subtitle = document.getElementById('subtitle').value;
-
-      try {
-        const res = await fetch('/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, subtitle })
-        });
-        
-        if (!res.ok) throw new Error('Błąd serwera');
-
-        const blob = await res.blob();
-        showResult(URL.createObjectURL(blob));
-      } catch (err) {
-        alert('Błąd generowania');
-        hideLoading();
-      }
-    });
-
-    function showLoading() {
-      document.getElementById('previewCard').style.display = 'block';
-      document.getElementById('spinner').style.display = 'block';
-      const img = document.getElementById('resultImg');
-      img.style.display = 'none';
-      img.src = '';
-    }
-
-    function showResult(url) {
-      document.getElementById('spinner').style.display = 'none';
-      const img = document.getElementById('resultImg');
-      img.src = url;
+      img.src = imageUrl;
       img.style.display = 'block';
-      img.scrollIntoView({ behavior: 'smooth' });
-    }
 
-    function hideLoading() {
-      document.getElementById('previewCard').style.display = 'none';
-      document.getElementById('spinner').style.display = 'none';
+      downloadBtn.href = imageUrl;
+      downloadBtn.style.display = 'block';
+
+      status.innerText = 'Grafika gotowa!';
+    } catch (err) {
+      console.error(err);
+      status.innerText = 'Wystąpił błąd podczas generowania grafiki.';
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>
