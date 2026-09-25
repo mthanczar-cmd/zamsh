@@ -3,279 +3,719 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>zamsh. studio - Generator Grafik</title>
+  <title>zamsh. studio — Dashboard</title>
+  <!-- Google Fonts & Lucide Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
   <style>
     :root {
-      --bg-color: #f7f5f0;
+      --bg-main: #f4f2ed;
+      --sidebar-bg: #ffffff;
       --card-bg: #ffffff;
-      --text-color: #2b2927;
+      --text-main: #2b2927;
       --text-muted: #8c857b;
-      --accent-color: #2b2927;
-      --border-color: #e6e1d8;
+      --accent: #2b2927;
+      --accent-soft: #f0ebe1;
+      --border: #e8e3d9;
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 10px 30px rgba(43, 41, 39, 0.04);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      padding: 20px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
       display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* --- SIDEBAR --- */
+    aside {
+      width: 260px;
+      background: var(--sidebar-bg);
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .brand {
+      padding: 0 10px 30px 10px;
+    }
+
+    .brand h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .brand span {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .nav-menu {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-main);
+      color: var(--text-main);
+    }
+
+    .nav-item.active {
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(43, 41, 39, 0.15);
+    }
+
+    .nav-item i { width: 20px; height: 20px; }
+
+    .nav-section-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin: 24px 10px 10px 10px;
+      font-weight: 700;
+    }
+
+    .user-profile {
+      margin-top: auto;
+      padding: 12px;
+      background: var(--bg-main);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #e2dbce;
+      display: flex;
+      align-items: center;
       justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-main);
     }
 
-    .container {
-      max-width: 600px;
-      width: 100%;
+    .user-info .name { font-weight: 600; font-size: 0.88rem; }
+    .user-info .role { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* --- MAIN CONTENT --- */
+    main {
+      flex: 1;
+      padding: 40px;
+      overflow-y: auto;
+      max-width: 1400px;
+    }
+
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .top-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    .top-header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* --- DASHBOARD GRID LAYOUT --- */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 28px;
+    }
+
+    @media (max-width: 1100px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
       background: var(--card-bg);
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    }
-
-    h1 {
-      font-family: Georgia, serif;
-      text-align: center;
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(232, 227, 217, 0.6);
       margin-bottom: 24px;
-      font-weight: normal;
     }
 
-    .section {
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--border-color);
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
     }
 
-    h2 { font-size: 1.1rem; margin-bottom: 15px; }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title i { color: var(--text-muted); }
+
+    /* --- FORMS --- */
+    .form-group {
+      margin-bottom: 18px;
+    }
 
     label {
       display: block;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 5px;
+      font-size: 0.78rem;
+      font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
     }
 
     input[type="text"], select, input[type="file"] {
       width: 100%;
-      padding: 10px 12px;
-      margin-bottom: 15px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      font-size: 0.95rem;
-      background-color: #faf9f6;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.92rem;
+      background: #faf8f5;
+      color: var(--text-main);
+      font-family: inherit;
+      transition: border 0.2s;
     }
 
-    .slot-row { display: flex; gap: 10px; margin-bottom: 10px; }
-    .slot-row input { margin-bottom: 0; }
+    input[type="text"]:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #ffffff;
+    }
 
-    button {
+    .slot-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .btn {
       width: 100%;
-      padding: 12px;
-      background-color: var(--accent-color);
+      padding: 13px 20px;
+      background: var(--accent);
       color: #ffffff;
       border: none;
-      border-radius: 6px;
-      font-size: 0.95rem;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.92rem;
       cursor: pointer;
-      margin-top: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
     }
 
-    button.secondary {
-      background-color: transparent;
-      color: var(--text-color);
-      border: 1px solid var(--border-color);
-      margin-bottom: 15px;
+    .btn:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
     }
 
-    .preview-area { margin-top: 30px; text-align: center; }
-    .preview-area img {
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-main);
+    }
+
+    /* --- PREVIEW PANEL --- */
+    .preview-sticky {
+      position: sticky;
+      top: 40px;
+    }
+
+    .preview-box {
+      width: 100%;
+      min-height: 420px;
+      background: #faf8f5;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-box img {
       max-width: 100%;
-      max-height: 500px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-height: 480px;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
       display: none;
-      margin: 15px auto;
     }
 
-    #status { font-size: 0.9rem; color: var(--text-muted); margin-top: 10px; }
+    .preview-placeholder {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    .preview-placeholder i {
+      margin-bottom: 10px;
+      opacity: 0.5;
+    }
+
+    #status {
+      margin-top: 14px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* --- TABS SYSTEM --- */
+    .type-selector {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-main);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      margin-bottom: 24px;
+    }
+
+    .type-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .type-btn.active {
+      background: #ffffff;
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>zamsh. studio</h1>
+  <!-- SIDEBAR NAWIGACYJNY -->
+  <aside>
+    <div class="brand">
+      <h1>zamsh.</h1>
+      <span>studio dashboard</span>
+    </div>
 
-  <!-- 1. WOLNE TERMINY -->
-  <div class="section">
-    <h2>1. Wolne Terminy (InstaStory)</h2>
-    <button class="secondary" onclick="fetchBooksy()">Pobierz dane z Booksy</button>
+    <div class="nav-section-title">Aplikacje</div>
+    <ul class="nav-menu">
+      <li>
+        <a class="nav-item active" onclick="switchTab('graphics', this)">
+          <i data-lucide="image"></i>
+          Generator Grafik
+        </a>
+      </li>
+      <li>
+        <a class="nav-item" onclick="switchTab('clients', this)">
+          <i data-lucide="users"></i>
+          Baza Klientek
+        </a>
+      </li>
+      <li>
+        <a class="nav-item" onclick="switchTab('finances', this)">
+          <i data-lucide="wallet"></i>
+          Finanse & Cennik
+        </a>
+      </li>
+    </ul>
 
-    <label>Nagłówek</label>
-    <input type="text" id="scheduleHeader" value="Wolne Terminy">
+    <div class="nav-section-title">Ustawienia</div>
+    <ul class="nav-menu">
+      <li>
+        <a class="nav-item" onclick="switchTab('settings', this)">
+          <i data-lucide="sliders"></i>
+          Ustawienia Studia
+        </a>
+      </li>
+    </ul>
 
-    <div id="slotsContainer">
-      <div class="slot-row">
-        <input type="text" class="slot-day" placeholder="Dzień (np. Poniedziałek 28.09)">
-        <input type="text" class="slot-hours" placeholder="Godziny (np. 12:00, 15:00)">
+    <div class="user-profile">
+      <div class="avatar">Z</div>
+      <div class="user-info">
+        <div class="name">Zuzia</div>
+        <div class="role">Właścicielka Studio</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- GŁÓWNA ZAWARTOŚĆ -->
+  <main>
+
+    <!-- ZAKŁADKA 1: GENERATOR GRAFIK -->
+    <div id="graphics-tab" class="tab-content active">
+      <div class="top-header">
+        <div>
+          <h2>Generator Grafik Instagram</h2>
+          <p>Twórz profesjonalne InstaStory oraz posty spójne z marką zamsh.</p>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- LEWA KOLUMNA: EDYTOR -->
+        <div>
+          <!-- WYBÓR TYPU GRAFIKI -->
+          <div class="type-selector">
+            <button class="type-btn active" onclick="showGeneratorForm('schedule', this)">Wolne Terminy</button>
+            <button class="type-btn" onclick="showGeneratorForm('beforeAfter', this)">Przed / Po</button>
+            <button class="type-btn" onclick="showGeneratorForm('post', this)">Standardowy Post</button>
+          </div>
+
+          <!-- FORMULARZ 1: WOLNE TERMINY -->
+          <div id="form-schedule" class="card">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="calendar"></i> Wolne Terminy (InstaStory)</div>
+              <button class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onclick="fetchBooksy()">
+                <i data-lucide="refresh-cw" style="width: 14px;"></i> Pobierz z Booksy
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label>Nagłówek</label>
+              <input type="text" id="scheduleHeader" value="Wolne Terminy">
+            </div>
+
+            <div id="slotsContainer">
+              <div class="slot-row">
+                <input type="text" class="slot-day" placeholder="Dzień (np. Poniedziałek 28.09)">
+                <input type="text" class="slot-hours" placeholder="Godziny (np. 12:00, 15:00)">
+              </div>
+            </div>
+
+            <button class="btn btn-secondary" style="margin-bottom: 16px;" onclick="addSlotRow()">
+              <i data-lucide="plus"></i> Dodaj kolejny dzień
+            </button>
+
+            <button class="btn" onclick="generateSchedule()">
+              <i data-lucide="sparkles"></i> Generuj Grafikę
+            </button>
+          </div>
+
+          <!-- FORMULARZ 2: PRZED I PO -->
+          <div id="form-beforeAfter" class="card" style="display: none;">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="columns"></i> Post / Relacja Przed i Po</div>
+            </div>
+
+            <div class="form-group">
+              <label>Zdjęcie PRZED</label>
+              <input type="file" id="beforeImg" accept="image/*">
+            </div>
+
+            <div class="form-group">
+              <label>Zdjęcie PO</label>
+              <input type="file" id="afterImg" accept="image/*">
+            </div>
+
+            <div class="form-group">
+              <label>Format Obrazu</label>
+              <select id="baAspect">
+                <option value="9:16">9:16 (InstaStory)</option>
+                <option value="4:5">4:5 (Post Instagram)</option>
+                <option value="1:1">1:1 (Kwadrat)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Tytuł Zabiegu (Opcjonalnie)</label>
+              <input type="text" id="baTitle" placeholder="np. LAMINACJA RZĘS">
+            </div>
+
+            <button class="btn" onclick="generateBeforeAfter()">
+              <i data-lucide="sparkles"></i> Generuj Grafikę
+            </button>
+          </div>
+
+          <!-- FORMULARZ 3: POST STANDARDOWY -->
+          <div id="form-post" class="card" style="display: none;">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="layout"></i> Post Informacyjny (Kwadrat)</div>
+            </div>
+
+            <div class="form-group">
+              <label>Tytuł Główny</label>
+              <input type="text" id="postTitle" placeholder="np. CENNIK USŁUG">
+            </div>
+
+            <div class="form-group">
+              <label>Podtytuł / Opis</label>
+              <input type="text" id="postSubtitle" placeholder="np. Obowiązuje od września">
+            </div>
+
+            <button class="btn" onclick="generatePost()">
+              <i data-lucide="sparkles"></i> Generuj Grafikę
+            </button>
+          </div>
+
+        </div>
+
+        <!-- PRAWA KOLUMNA: PODGLĄD & DOWNLOAD -->
+        <div>
+          <div class="card preview-sticky">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="eye"></i> Podgląd Na Żywo</div>
+            </div>
+
+            <div class="preview-box">
+              <div id="previewPlaceholder" class="preview-placeholder">
+                <i data-lucide="image" style="width: 48px; height: 48px;"></i>
+                <p>Wypełnij formularz po lewej stronie i kliknij <strong>Generuj Grafikę</strong>.</p>
+              </div>
+              <img id="resultImage" alt="Wygenerowana Grafika">
+            </div>
+
+            <div id="status">Gotowy do działania</div>
+
+            <a id="downloadBtn" style="display: none; text-decoration: none; margin-top: 16px;" download="zamsh-grafika.png">
+              <button class="btn" style="background: #3e5240;">
+                <i data-lucide="download"></i> Pobierz Obraz (PNG)
+              </button>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
 
-    <button type="button" class="secondary" onclick="addSlotRow()">+ Dodaj kolejny dzień</button>
-    <button type="button" onclick="generateSchedule()">Generuj Grafikę Terminów</button>
-  </div>
+    <!-- ZAKŁADKA 2: BAZA KLIENTEK (MOCKUP NA PRZYSZŁOŚĆ) -->
+    <div id="clients-tab" class="tab-content">
+      <div class="top-header">
+        <div>
+          <h2>Baza Klientek</h2>
+          <p>Moduł do zarządzania historią zabiegów i preferencjami klientek (Wbudowanie wkrótce).</p>
+        </div>
+      </div>
+      <div class="card">
+        <p style="color: var(--text-muted);">Tutaj dodamy kartoteki klientek, historię wizyt i preferowane efekty (rzesy, brwi).</p>
+      </div>
+    </div>
 
-  <!-- 2. PRZED I PO -->
-  <div class="section">
-    <h2>2. Przed i Po</h2>
-    <label>Zdjęcie PRZED</label>
-    <input type="file" id="beforeImg" accept="image/*">
+    <!-- ZAKŁADKA 3: FINANSE (MOCKUP NA PRZYSZŁOŚĆ) -->
+    <div id="finances-tab" class="tab-content">
+      <div class="top-header">
+        <div>
+          <h2>Finanse & Cennik</h2>
+          <p>Podsumowanie przychodów i zarządzenie cennikiem usług.</p>
+        </div>
+      </div>
+      <div class="card">
+        <p style="color: var(--text-muted);">Moduł analityki przychodów z zabiegów jest w przygotowaniu.</p>
+      </div>
+    </div>
 
-    <label>Zdjęcie PO</label>
-    <input type="file" id="afterImg" accept="image/*">
+    <!-- ZAKŁADKA 4: USTAWIENIA -->
+    <div id="settings-tab" class="tab-content">
+      <div class="top-header">
+        <div>
+          <h2>Ustawienia Studia</h2>
+          <p>Konfiguracja integracji Booksy oraz szablonów zamsh.</p>
+        </div>
+      </div>
+      <div class="card">
+        <p style="color: var(--text-muted);">Ustawienia połączeń z API Booksy i Instagramem.</p>
+      </div>
+    </div>
 
-    <label>Format</label>
-    <select id="baAspect">
-      <option value="9:16">9:16 (InstaStory)</option>
-      <option value="4:5">4:5 (Post Instagram)</option>
-      <option value="1:1">1:1 (Kwadrat)</option>
-    </select>
+  </main>
 
-    <label>Tytuł (Opcjonalnie)</label>
-    <input type="text" id="baTitle" placeholder="np. LAMINACJA BRZWI">
+  <script>
+    // Inicjalizacja ikonek Lucide
+    lucide.createIcons();
 
-    <button type="button" onclick="generateBeforeAfter()">Generuj Przed / Po</button>
-  </div>
+    // Przełączanie zakładki głównej
+    function switchTab(tabId, element) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
 
-  <!-- 3. STANDARDOWY POST -->
-  <div class="section">
-    <h2>3. Post Standardowy (Kwadrat)</h2>
-    <label>Nagłówek</label>
-    <input type="text" id="postTitle" placeholder="np. CENNIK USŁUG">
-
-    <label>Podtytuł</label>
-    <input type="text" id="postSubtitle" placeholder="np. Obowiązuje od września">
-
-    <button type="button" onclick="generatePost()">Generuj Post</button>
-  </div>
-
-  <!-- PODGLĄD GRAFIKI -->
-  <div class="preview-area">
-    <h2>Podgląd / Pobieranie</h2>
-    <p id="status">Wybierz opcję powyżej, aby wygenerować grafikę.</p>
-    <img id="resultImage" alt="Wygenerowana grafika">
-    <a id="downloadBtn" style="display:none;" download="zamsh-grafika.png">
-      <button style="background-color: #4a6b4e; margin-top: 10px;">Pobierz Obraz</button>
-    </a>
-  </div>
-</div>
-
-<script>
-  function addSlotRow(day = '', hours = '') {
-    const container = document.getElementById('slotsContainer');
-    const row = document.createElement('div');
-    row.className = 'slot-row';
-    row.innerHTML = `
-      <input type="text" class="slot-day" placeholder="Dzień" value="${day}">
-      <input type="text" class="slot-hours" placeholder="Godziny" value="${hours}">
-    `;
-    container.appendChild(row);
-  }
-
-  async function showResult(response) {
-    const status = document.getElementById('status');
-    const img = document.getElementById('resultImage');
-    const downloadBtn = document.getElementById('downloadBtn');
-
-    if (!response.ok) {
-      status.innerText = 'Błąd podczas generowania grafiki.';
-      return;
+      document.getElementById(tabId + '-tab').classList.add('active');
+      element.classList.add('active');
     }
 
-    const blob = await response.blob();
-    const imageUrl = URL.createObjectURL(blob);
+    // Przełączanie typów generatora wewnątrz zakładki grafik
+    function showGeneratorForm(type, btn) {
+      document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
 
-    img.src = imageUrl;
-    img.style.display = 'block';
+      document.getElementById('form-schedule').style.display = type === 'schedule' ? 'block' : 'none';
+      document.getElementById('form-beforeAfter').style.display = type === 'beforeAfter' ? 'block' : 'none';
+      document.getElementById('form-post').style.display = type === 'post' ? 'block' : 'none';
+    }
 
-    downloadBtn.href = imageUrl;
-    downloadBtn.style.display = 'block';
+    // Dynamiczne dodawanie wiersza terminu
+    function addSlotRow(day = '', hours = '') {
+      const container = document.getElementById('slotsContainer');
+      const row = document.createElement('div');
+      row.className = 'slot-row';
+      row.innerHTML = `
+        <input type="text" class="slot-day" placeholder="Dzień" value="${day}">
+        <input type="text" class="slot-hours" placeholder="Godziny" value="${hours}">
+      `;
+      container.appendChild(row);
+    }
 
-    status.innerText = 'Grafika gotowa!';
-  }
+    // Wyświetlanie wyniku
+    async function showResult(response) {
+      const status = document.getElementById('status');
+      const img = document.getElementById('resultImage');
+      const placeholder = document.getElementById('previewPlaceholder');
+      const downloadBtn = document.getElementById('downloadBtn');
 
-  async function fetchBooksy() {
-    document.getElementById('status').innerText = 'Pobieranie z Booksy...';
-    try {
-      const res = await fetch('/fetch-booksy');
-      const data = await res.json();
-      if (data.success && data.slots) {
-        document.getElementById('slotsContainer').innerHTML = '';
-        data.slots.forEach(s => addSlotRow(s.day, s.hours));
-        document.getElementById('status').innerText = 'Pobrano terminy z Booksy!';
+      if (!response.ok) {
+        status.innerText = 'Wystąpił błąd podczas generowania.';
+        return;
       }
-    } catch (err) {
-      document.getElementById('status').innerText = 'Błąd połączenia z serwerem.';
+
+      const blob = await response.blob();
+      const imageUrl = URL.createObjectURL(blob);
+
+      img.src = imageUrl;
+      img.style.display = 'block';
+      placeholder.style.display = 'none';
+
+      downloadBtn.href = imageUrl;
+      downloadBtn.style.display = 'block';
+
+      status.innerText = 'Grafika została wygenerowana!';
     }
-  }
 
-  async function generateSchedule() {
-    document.getElementById('status').innerText = 'Generowanie...';
-    const header = document.getElementById('scheduleHeader').value;
-    const days = document.querySelectorAll('.slot-day');
-    const hours = document.querySelectorAll('.slot-hours');
-
-    const slots = [];
-    days.forEach((dayInput, index) => {
-      if (dayInput.value.trim()) {
-        slots.push({ day: dayInput.value.trim(), hours: hours[index].value.trim() });
+    // Pobieranie z Booksy
+    async function fetchBooksy() {
+      document.getElementById('status').innerText = 'Pobieranie terminów z Booksy...';
+      try {
+        const res = await fetch('/fetch-booksy');
+        const data = await res.json();
+        if (data.success && data.slots) {
+          document.getElementById('slotsContainer').innerHTML = '';
+          data.slots.forEach(s => addSlotRow(s.day, s.hours));
+          document.getElementById('status').innerText = 'Pobrano terminy z Booksy!';
+        }
+      } catch (err) {
+        document.getElementById('status').innerText = 'Błąd połączenia z serwerem.';
       }
-    });
-
-    const res = await fetch('/generate-schedule', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ header, slots })
-    });
-    showResult(res);
-  }
-
-  async function generateBeforeAfter() {
-    const beforeFile = document.getElementById('beforeImg').files[0];
-    const afterFile = document.getElementById('afterImg').files[0];
-
-    if (!beforeFile || !afterFile) {
-      alert('Wybierz oba zdjęcia (Przed i Po)!');
-      return;
     }
 
-    document.getElementById('status').innerText = 'Przetwarzanie zdjęć...';
-    const formData = new FormData();
-    formData.append('before', beforeFile);
-    formData.append('after', afterFile);
-    formData.append('aspectRatio', document.getElementById('baAspect').value);
-    formData.append('title', document.getElementById('baTitle').value);
+    // Generowanie Wolne Terminy
+    async function generateSchedule() {
+      document.getElementById('status').innerText = 'Generowanie grafiki...';
+      const header = document.getElementById('scheduleHeader').value;
+      const days = document.querySelectorAll('.slot-day');
+      const hours = document.querySelectorAll('.slot-hours');
 
-    const res = await fetch('/generate-before-after', {
-      method: 'POST',
-      body: formData
-    });
-    showResult(res);
-  }
+      const slots = [];
+      days.forEach((dayInput, index) => {
+        if (dayInput.value.trim()) {
+          slots.push({ day: dayInput.value.trim(), hours: hours[index].value.trim() });
+        }
+      });
 
-  async function generatePost() {
-    document.getElementById('status').innerText = 'Generowanie...';
-    const title = document.getElementById('postTitle').value;
-    const subtitle = document.getElementById('postSubtitle').value;
+      const res = await fetch('/generate-schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ header, slots })
+      });
+      showResult(res);
+    }
 
-    const res = await fetch('/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, subtitle })
-    });
-    showResult(res);
-  }
-</script>
+    // Generowanie Przed i Po
+    async function generateBeforeAfter() {
+      const beforeFile = document.getElementById('beforeImg').files[0];
+      const afterFile = document.getElementById('afterImg').files[0];
+
+      if (!beforeFile || !afterFile) {
+        alert('Wybierz oba zdjęcia (Przed i Po)!');
+        return;
+      }
+
+      document.getElementById('status').innerText = 'Przetwarzanie obrazów...';
+      const formData = new FormData();
+      formData.append('before', beforeFile);
+      formData.append('after', afterFile);
+      formData.append('aspectRatio', document.getElementById('baAspect').value);
+      formData.append('title', document.getElementById('baTitle').value);
+
+      const res = await fetch('/generate-before-after', {
+        method: 'POST',
+        body: formData
+      });
+      showResult(res);
+    }
+
+    // Generowanie Post Standardowy
+    async function generatePost() {
+      document.getElementById('status').innerText = 'Generowanie postu...';
+      const title = document.getElementById('postTitle').value;
+      const subtitle = document.getElementById('postSubtitle').value;
+
+      const res = await fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, subtitle })
+      });
+      showResult(res);
+    }
+  </script>
 
 </body>
 </html>
