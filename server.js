@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { generatePost, generateBeforeAfter } = require('./imageGenerator');
+const { generatePost, generateBeforeAfter, generateScheduleCanvas } = require('./imageGenerator');
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -8,7 +8,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(express.json());
 app.use(express.static('.'));
 
-// Endpoint dla zwykłych postów
+// Standard Post
 app.post('/generate', async (req, res) => {
   try {
     const { title, subtitle } = req.body;
@@ -17,11 +17,11 @@ app.post('/generate', async (req, res) => {
     res.send(buffer);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error generating image');
+    res.status(500).send('Błąd generowania');
   }
 });
 
-// Endpoint dla modułu Przed i Po (obsługa 2 plików)
+// Przed i Po
 app.post('/generate-before-after', upload.fields([
   { name: 'before', maxCount: 1 },
   { name: 'after', maxCount: 1 }
@@ -40,11 +40,24 @@ app.post('/generate-before-after', upload.fields([
     res.send(buffer);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error generating before/after image');
+    res.status(500).send('Błąd generowania Przed/Po');
+  }
+});
+
+// Wolne Terminy
+app.post('/generate-schedule', async (req, res) => {
+  try {
+    const { header, slots } = req.body;
+    const buffer = await generateScheduleCanvas(header, slots);
+    res.setHeader('Content-Type', 'image/png');
+    res.send(buffer);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Błąd generowania terminów');
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Serwer uruchomiony na port ${PORT}`);
 });
