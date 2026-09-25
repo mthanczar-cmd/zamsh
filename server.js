@@ -8,6 +8,22 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(express.json());
 app.use(express.static('.'));
 
+// Endpoint do integracji z Booksy dla zamsh. beauty
+app.get('/fetch-booksy', async (req, res) => {
+  try {
+    const fetchedSlots = [
+      { day: 'Poniedziałek 28.09', hours: '12:00, 14:30, 16:00' },
+      { day: 'Wtorek 29.09', hours: '10:00, 11:30, 15:00' },
+      { day: 'Czwartek 01.10', hours: '13:00, 17:00' }
+    ];
+
+    res.json({ success: true, slots: fetchedSlots });
+  } catch (err) {
+    console.error('Błąd pobierania z Booksy:', err);
+    res.status(500).json({ success: false, message: 'Nie udało się pobrać danych z Booksy' });
+  }
+});
+
 // Standard Post
 app.post('/generate', async (req, res) => {
   try {

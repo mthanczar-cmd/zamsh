@@ -59,8 +59,10 @@
     .schedule-row input { flex: 1; }
     .btn-remove { background: #e57373; color: white; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 18px; line-height: 1; flex-shrink: 0; }
     
-    .actions-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .actions-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .actions-buttons { display: flex; gap: 8px; }
     .btn-secondary { flex: 1; background: #eae6df; color: var(--accent-color); border: none; padding: 10px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-booksy { width: 100%; background: var(--accent-color); color: #fff; border: none; padding: 12px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
     .btn-clear { background: #f0e2e2; color: #a94444; border: none; padding: 10px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
 
     .btn-primary {
@@ -150,8 +152,13 @@
             </div>
             
             <div class="actions-row">
-              <button type="button" class="btn-secondary" onclick="addScheduleRow()">+ Dodaj dzień</button>
-              <button type="button" class="btn-clear" onclick="clearScheduleRows()">Wyczyść dni</button>
+              <button type="button" class="btn-booksy" onclick="fetchFromBooksy(event)">
+                ✨ Pobierz wolne terminy z Booksy
+              </button>
+              <div class="actions-buttons">
+                <button type="button" class="btn-secondary" onclick="addScheduleRow()">+ Dodaj dzień</button>
+                <button type="button" class="btn-clear" onclick="clearScheduleRows()">Wyczyść dni</button>
+              </div>
             </div>
           </div>
 
@@ -241,7 +248,37 @@
       `;
     }
 
-    // Obsługa generowania Terminów bez odświeżania i czyszczenia wierszy
+    async function fetchFromBooksy(event) {
+      const btn = event.target;
+      const originalText = btn.innerText;
+      btn.innerText = 'Pobieranie z Booksy...';
+      
+      try {
+        const res = await fetch('/fetch-booksy');
+        const data = await res.json();
+        
+        if (data.success && data.slots.length > 0) {
+          const container = document.getElementById('scheduleSlots');
+          container.innerHTML = ''; 
+
+          data.slots.forEach(slot => {
+            const div = document.createElement('div');
+            div.className = 'schedule-row';
+            div.innerHTML = `
+              <input type="text" value="${slot.day}" class="sched-day">
+              <input type="text" value="${slot.hours}" class="sched-hours">
+              <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
+            `;
+            container.appendChild(div);
+          });
+        }
+      } catch (err) {
+        alert('Nie udało się pobrać terminów z Booksy');
+      } finally {
+        btn.innerText = originalText;
+      }
+    }
+
     async function submitSchedule() {
       showLoading();
 
@@ -276,7 +313,6 @@
       }
     }
 
-    // Formularz Przed / Po
     document.getElementById('baForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fileBefore = document.getElementById('fileBefore').files[0];
@@ -306,7 +342,6 @@
       }
     });
 
-    // Formularz Standard
     document.getElementById('postForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       showLoading();
