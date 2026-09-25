@@ -1,0 +1,16 @@
+{
+  "name": "zamsh. Studio",
+  "short_name": "zamsh.",
+  "description": "Generator grafik z wolnymi terminami dla salonu beauty",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F5F0",
+  "theme_color": "#F8F5F0",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/ios-filled/512/7A6A58/sparkles.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

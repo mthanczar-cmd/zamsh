@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>zamsh Studio — Generator Postów</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #F8F5F0;
+      --card-bg: #FFFFFF;
+      --accent-warm: #C4B5A5;
+      --accent-dark: #2D2926;
+      --text-muted: #7A6A58;
+      --border-color: #EAE3D9;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 10px;
+      --shadow-soft: 0 10px 30px rgba(45, 41, 38, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--accent-dark);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px 12px 40px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* HEADER */
+    .header {
+      text-align: center;
+      padding: 12px 0 4px;
+    }
+
+    .header-logo {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: lowercase;
+      color: var(--accent-dark);
+    }
+
+    .header-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      letter-spacing: 0.5px;
+    }
+
+    /* KARTY SEKCJI */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-color);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Wybór daty i godziny */
+    .quick-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn-chip {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      color: var(--accent-dark);
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .btn-chip.active {
+      background: var(--accent-dark);
+      color: #FFFFFF;
+      border-color: var(--accent-dark);
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    input[type="date"], input[type="time"], select {
+      width: 100%;
+      padding: 12px;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--accent-dark);
+      outline: none;
+    }
+
+    .btn-add {
+      width: 100%;
+      background: var(--accent-warm);
+      color: #FFFFFF;
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-add:active {
+      opacity: 0.85;
+    }
+
+    /* LISTA TERMINÓW */
+    .slots-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slot-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-main);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn-remove {
+      background: none;
+      border: none;
+      color: #e53e3e;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      padding: 12px 0;
+    }
+
+    /* GENERUJ & PODGLĄD */
+    .btn-generate {
+      width: 100%;
+      background: var(--accent-dark);
+      color: #FFFFFF;
+      border: none;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(45, 41, 38, 0.2);
+    }
+
+    .preview-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .preview-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .btn-action {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      color: var(--accent-dark);
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* Kopiowanie Opisu */
+    .caption-box {
+      width: 100%;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      font-size: 12px;
+      color: var(--accent-dark);
+      white-space: pre-line;
+      margin-top: 8px;
+    }
+
+    .spinner {
+      display: none;
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(45, 41, 38, 0.1);
+      border-top-color: var(--accent-dark);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-logo">zamsh.</div>
+      <div class="header-subtitle">Generator Wolnych Terminów</div>
+    </div>
+
+    <!-- 1. WPROWADZANIE TERMINÓW -->
+    <div class="card">
+      <div class="card-title">1. Dodaj termin</div>
+
+      <div class="quick-buttons">
+        <button class="btn-chip active" onclick="setQuickDate(0, this)">Dzisiaj</button>
+        <button class="btn-chip" onclick="setQuickDate(1, this)">Jutro</button>
+        <button class="btn-chip" onclick="setQuickDate(2, this)">Pojutrze</button>
+      </div>
+
+      <div class="input-row">
+        <input type="date" id="dateInput">
+        <input type="time" id="timeInput" value="12:00">
+      </div>
+
+      <button class="btn-add" onclick="addSlot()">+ Dodaj do listy</button>
+    </div>
+
+    <!-- 2. LISTA I STYL -->
+    <div class="card">
+      <div class="card-title">2. Lista terminów & Styl</div>
+      
+      <div id="slotsList" class="slots-list" style="margin-bottom: 16px;">
+        <div class="empty-state">Brak dodanych terminów. Dodaj pierwszy powyżej!</div>
+      </div>
+
+      <select id="styleSelect">
+        <option value="1">🌱 Style: Japandi Warm Beige</option>
+        <option value="2">🌸 Style: Pudrowy Róż / Nude</option>
+        <option value="3">⚪ Style: Modern Minimalist</option>
+      </select>
+    </div>
+
+    <!-- PRZYCISK GENEROWANIA -->
+    <button class="btn-generate" onclick="generatePost()">Wygeneruj Grafikę</button>
+
+    <!-- 3. PODGLĄD & UDOSTĘPNIANIE -->
+    <div class="card" id="previewCard" style="display: none;">
+      <div class="card-title">3. Gotowy Post</div>
+      
+      <div class="preview-container">
+        <div class="spinner" id="loadingSpinner"></div>
+        <img id="resultImage" class="preview-image" src="" alt="Podgląd posta" style="display: none;">
+        
+        <div class="action-buttons" id="actionButtons" style="display: none;">
+          <button class="btn-action" onclick="shareOrDownload()">📲 Pobierz / Udostępnij</button>
+          <button class="btn-action" onclick="copyCaption()">📋 Skopiuj opis</button>
+        </div>
+
+        <div class="caption-box" id="captionBox" style="display: none;"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let slots = [];
+    let selectedDateStr = "";
+
+    // Domyślnie ustaw dzisiejszą datę
+    document.addEventListener("DOMContentLoaded", () => {
+      setQuickDate(0, document.querySelector('.btn-chip'));
+    });
+
+    function setQuickDate(daysToAdd, btn) {
+      document.querySelectorAll('.btn-chip').forEach(b => b.classList.remove('active'));
+      if(btn) btn.classList.add('active');
+
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + daysToAdd);
+
+      const year = targetDate.getFullYear();
+      const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+      const day = String(targetDate.getDate()).padStart(2, '0');
+
+      document.getElementById('dateInput').value = `${year}-${month}-${day}`;
+    }
+
+    function addSlot() {
+      const dateVal = document.getElementById('dateInput').value;
+      const timeVal = document.getElementById('timeInput').value;
+
+      if (!dateVal || !timeVal) {
+        alert('Wybierz datę i godzinę!');
+        return;
+      }
+
+      const dateObj = new Date(dateVal);
+      const days = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'];
+      const dayName = days[dateObj.getDay()];
+
+      const formattedSlot = `${dayName} -${timeVal}`;
+      slots.push(formattedSlot);
+      renderSlots();
+    }
+
+    function removeSlot(index) {
+      slots.splice(index, 1);
+      renderSlots();
+    }
+
+    function renderSlots() {
+      const listEl = document.getElementById('slotsList');
+      if (slots.length === 0) {
+        listEl.innerHTML = '<div class="empty-state">Brak dodanych terminów. Dodaj pierwszy powyżej!</div>';
+        return;
+      }
+
+      listEl.innerHTML = slots.map((slot, index) => `
+        <div class="slot-item">
+          <span>✨ ${slot}</span>
+          <button class="btn-remove" onclick="removeSlot(${index})">✕</button>
+        </div>
+      `).join('');
+    }
+
+    async function generatePost() {
+      if (slots.length === 0) {
+        alert('Dodaj przynajmniej jeden termin!');
+        return;
+      }
+
+      const previewCard = document.getElementById('previewCard');
+      const spinner = document.getElementById('loadingSpinner');
+      const img = document.getElementById('resultImage');
+      const actionBtns = document.getElementById('actionButtons');
+      const captionBox = document.getElementById('captionBox');
+      const style = document.getElementById('styleSelect').value;
+
+      previewCard.style.display = 'block';
+      spinner.style.display = 'block';
+      img.style.display = 'none';
+      actionBtns.style.display = 'none';
+      captionBox.style.display = 'none';
+
+      previewCard.scrollIntoView({ behavior: 'smooth' });
+
+      try {
+        const response = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slots, style })
+        });
+
+        if (!response.ok) throw new Error('Błąd generowania');
+
+        // Odświeżenie obrazka bez buforowania
+        img.src = `/post.png?t=${new Date().getTime()}`;
+        img.onload = () => {
+          spinner.style.display = 'none';
+          img.style.display = 'block';
+          actionBtns.style.display = 'grid';
+          generateCaption();
+        };
+
+      } catch (err) {
+        spinner.style.display = 'none';
+        alert('Wystąpił błąd podczas tworzenia posta.');
+      }
+    }
+
+    function generateCaption() {
+      const text = `Dziewczyny, zwolniły się terminy na stylizację! ✨\n\nWolne okienka:\n${slots.map(s => `• ${s}`).join('\n')}\n\nRezerwacja przez Booksy lub w wiadomości prywatnej! 📲\n\n#stylizacjarzes #brwi #poznan #rokietnica #zamsh #lastminute #beauty`;
+      const captionBox = document.getElementById('captionBox');
+      captionBox.innerText = text;
+      captionBox.style.display = 'block';
+    }
+
+    async function copyCaption() {
+      const captionText = document.getElementById('captionBox').innerText;
+      await navigator.clipboard.writeText(captionText);
+      alert('Opis skopiowany do schowka! 📋');
+    }
+
+    async function shareOrDownload() {
+      const imageUrl = document.getElementById('resultImage').src;
+      
+      try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const file = new File([blob], 'post.png', { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Wolne Terminy — zamsh',
+            files: [file]
+          });
+        } else {
+          // Fallback: Pobierz plik
+          const link = document.createElement('a');
+          link.href = imageUrl;
+          link.download = 'post.png';
+          link.click();
+        }
+      } catch (e) {
+        window.open('/post.png', '_blank');
+      }
+    }
+  </script>
+</body>
+</html>
