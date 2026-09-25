@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>zamsh. studio — Dashboard</title>
   <!-- Google Fonts & Lucide Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,7 +37,7 @@
       overflow-x: hidden;
     }
 
-    /* --- SIDEBAR --- */
+    /* --- SIDEBAR (DESKTOP) --- */
     aside {
       width: 260px;
       background: var(--sidebar-bg);
@@ -46,10 +46,12 @@
       flex-direction: column;
       border-right: 1px solid var(--border);
       flex-shrink: 0;
+      transition: transform 0.3s ease;
+      z-index: 100;
     }
 
     .brand {
-      padding: 0 10px 30px 10px;
+      padding: 0 10px 20px 10px;
     }
 
     .brand h1 {
@@ -107,7 +109,7 @@
       text-transform: uppercase;
       letter-spacing: 1.5px;
       color: var(--text-muted);
-      margin: 24px 10px 10px 10px;
+      margin: 20px 10px 8px 10px;
       font-weight: 700;
     }
 
@@ -143,13 +145,14 @@
       padding: 40px;
       overflow-y: auto;
       max-width: 1400px;
+      width: 100%;
     }
 
     .top-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
 
     .top-header h2 {
@@ -174,10 +177,6 @@
       gap: 28px;
     }
 
-    @media (max-width: 1100px) {
-      .dashboard-grid { grid-template-columns: 1fr; }
-    }
-
     .card {
       background: var(--card-bg);
       border-radius: var(--radius-lg);
@@ -192,6 +191,8 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 20px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .card-title {
@@ -283,7 +284,7 @@
 
     .preview-box {
       width: 100%;
-      min-height: 420px;
+      min-height: 380px;
       background: #faf8f5;
       border: 2px dashed var(--border);
       border-radius: var(--radius-md);
@@ -325,16 +326,17 @@
     /* --- TABS SYSTEM --- */
     .type-selector {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       background: var(--bg-main);
       padding: 4px;
       border-radius: var(--radius-md);
       margin-bottom: 24px;
+      overflow-x: auto;
     }
 
     .type-btn {
       flex: 1;
-      padding: 10px;
+      padding: 10px 14px;
       border: none;
       background: transparent;
       font-size: 0.85rem;
@@ -342,6 +344,7 @@
       color: var(--text-muted);
       border-radius: var(--radius-sm);
       cursor: pointer;
+      white-space: nowrap;
       transition: all 0.2s;
     }
 
@@ -350,13 +353,101 @@
       color: var(--text-main);
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
+
+    /* --- MOBILE NAVIGATION BAR --- */
+    .mobile-header {
+      display: none;
+      background: var(--sidebar-bg);
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 101;
+    }
+
+    .mobile-header .brand h1 {
+      font-size: 1.4rem;
+    }
+
+    .mobile-menu-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    /* RESPONSIVE MEDIA QUERIES (TELEFONY I TABLETY) */
+    @media (max-width: 900px) {
+      body {
+        flex-direction: column;
+      }
+
+      .mobile-header {
+        display: flex;
+      }
+
+      aside {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        transform: translateX(-100%);
+        box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+      }
+
+      aside.open {
+        transform: translateX(0);
+      }
+
+      main {
+        padding: 20px 16px;
+      }
+
+      .top-header h2 {
+        font-size: 1.5rem;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .preview-sticky {
+        position: relative;
+        top: 0;
+      }
+
+      .card {
+        padding: 20px;
+        border-radius: 16px;
+      }
+
+      .slot-row {
+        flex-direction: column;
+        gap: 6px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <!-- SIDEBAR NAWIGACYJNY -->
-  <aside>
+  <!-- NAGŁÓWEK DLA TELEFONÓW -->
+  <header class="mobile-header">
     <div class="brand">
+      <h1>zamsh.</h1>
+    </div>
+    <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
+      <i data-lucide="menu" id="menuIcon"></i>
+    </button>
+  </header>
+
+  <!-- SIDEBAR NAWIGACYJNY -->
+  <aside id="sidebar">
+    <div class="brand" style="display: var(--desktop-only, block);">
       <h1>zamsh.</h1>
       <span>studio dashboard</span>
     </div>
@@ -409,8 +500,8 @@
     <div id="graphics-tab" class="tab-content active">
       <div class="top-header">
         <div>
-          <h2>Generator Grafik Instagram</h2>
-          <p>Twórz profesjonalne InstaStory oraz posty spójne z marką zamsh.</p>
+          <h2>Generator Grafik</h2>
+          <p>Twórz spójne InstaStory oraz posty dla zamsh.</p>
         </div>
       </div>
 
@@ -427,9 +518,9 @@
           <!-- FORMULARZ 1: WOLNE TERMINY -->
           <div id="form-schedule" class="card">
             <div class="card-header">
-              <div class="card-title"><i data-lucide="calendar"></i> Wolne Terminy (InstaStory)</div>
+              <div class="card-title"><i data-lucide="calendar"></i> Wolne Terminy</div>
               <button class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onclick="fetchBooksy()">
-                <i data-lucide="refresh-cw" style="width: 14px;"></i> Pobierz z Booksy
+                <i data-lucide="refresh-cw" style="width: 14px;"></i> Booksy
               </button>
             </div>
 
@@ -457,7 +548,7 @@
           <!-- FORMULARZ 2: PRZED I PO -->
           <div id="form-beforeAfter" class="card" style="display: none;">
             <div class="card-header">
-              <div class="card-title"><i data-lucide="columns"></i> Post / Relacja Przed i Po</div>
+              <div class="card-title"><i data-lucide="columns"></i> Zdjęcia Przed i Po</div>
             </div>
 
             <div class="form-group">
@@ -492,7 +583,7 @@
           <!-- FORMULARZ 3: POST STANDARDOWY -->
           <div id="form-post" class="card" style="display: none;">
             <div class="card-header">
-              <div class="card-title"><i data-lucide="layout"></i> Post Informacyjny (Kwadrat)</div>
+              <div class="card-title"><i data-lucide="layout"></i> Post Informacyjny</div>
             </div>
 
             <div class="form-group">
@@ -522,7 +613,7 @@
             <div class="preview-box">
               <div id="previewPlaceholder" class="preview-placeholder">
                 <i data-lucide="image" style="width: 48px; height: 48px;"></i>
-                <p>Wypełnij formularz po lewej stronie i kliknij <strong>Generuj Grafikę</strong>.</p>
+                <p>Kliknij <strong>Generuj Grafikę</strong>, aby zobaczyć podgląd.</p>
               </div>
               <img id="resultImage" alt="Wygenerowana Grafika">
             </div>
@@ -539,29 +630,29 @@
       </div>
     </div>
 
-    <!-- ZAKŁADKA 2: BAZA KLIENTEK (MOCKUP NA PRZYSZŁOŚĆ) -->
+    <!-- ZAKŁADKA 2: BAZA KLIENTEK -->
     <div id="clients-tab" class="tab-content">
       <div class="top-header">
         <div>
           <h2>Baza Klientek</h2>
-          <p>Moduł do zarządzania historią zabiegów i preferencjami klientek (Wbudowanie wkrótce).</p>
+          <p>Moduł do zarządzania kartotekami klientek.</p>
         </div>
       </div>
       <div class="card">
-        <p style="color: var(--text-muted);">Tutaj dodamy kartoteki klientek, historię wizyt i preferowane efekty (rzesy, brwi).</p>
+        <p style="color: var(--text-muted);">Kartoteki klientek oraz historia wizyt pojawią się tutaj niedługo.</p>
       </div>
     </div>
 
-    <!-- ZAKŁADKA 3: FINANSE (MOCKUP NA PRZYSZŁOŚĆ) -->
+    <!-- ZAKŁADKA 3: FINANSE -->
     <div id="finances-tab" class="tab-content">
       <div class="top-header">
         <div>
           <h2>Finanse & Cennik</h2>
-          <p>Podsumowanie przychodów i zarządzenie cennikiem usług.</p>
+          <p>Podsumowanie przychodów i zarządzenie cennikiem.</p>
         </div>
       </div>
       <div class="card">
-        <p style="color: var(--text-muted);">Moduł analityki przychodów z zabiegów jest w przygotowaniu.</p>
+        <p style="color: var(--text-muted);">Moduł analityki finansowej w przygotowaniu.</p>
       </div>
     </div>
 
@@ -570,19 +661,24 @@
       <div class="top-header">
         <div>
           <h2>Ustawienia Studia</h2>
-          <p>Konfiguracja integracji Booksy oraz szablonów zamsh.</p>
+          <p>Konfiguracja połączeń i szablonów.</p>
         </div>
       </div>
       <div class="card">
-        <p style="color: var(--text-muted);">Ustawienia połączeń z API Booksy i Instagramem.</p>
+        <p style="color: var(--text-muted);">Ustawienia połączenia z Booksy i Instagramem.</p>
       </div>
     </div>
 
   </main>
 
   <script>
-    // Inicjalizacja ikonek Lucide
     lucide.createIcons();
+
+    // Menu mobilne
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('open');
+    }
 
     // Przełączanie zakładki głównej
     function switchTab(tabId, element) {
@@ -591,9 +687,12 @@
 
       document.getElementById(tabId + '-tab').classList.add('active');
       element.classList.add('active');
+
+      // Zamknij sidebar na telefonie po kliknięciu
+      document.getElementById('sidebar').classList.remove('open');
     }
 
-    // Przełączanie typów generatora wewnątrz zakładki grafik
+    // Przełączanie typów generatora
     function showGeneratorForm(type, btn) {
       document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -603,7 +702,7 @@
       document.getElementById('form-post').style.display = type === 'post' ? 'block' : 'none';
     }
 
-    // Dynamiczne dodawanie wiersza terminu
+    // Dodawanie wiersza terminu
     function addSlotRow(day = '', hours = '') {
       const container = document.getElementById('slotsContainer');
       const row = document.createElement('div');
@@ -615,7 +714,7 @@
       container.appendChild(row);
     }
 
-    // Wyświetlanie wyniku
+    // Wyświetlanie wyniku i automatyczny przewijanie na telefonie
     async function showResult(response) {
       const status = document.getElementById('status');
       const img = document.getElementById('resultImage');
@@ -638,11 +737,16 @@
       downloadBtn.style.display = 'block';
 
       status.innerText = 'Grafika została wygenerowana!';
+
+      // Na telefonie przewiń płynnie do sekcji podglądu
+      if (window.innerWidth <= 900) {
+        document.querySelector('.preview-sticky').scrollIntoView({ behavior: 'smooth' });
+      }
     }
 
     // Pobieranie z Booksy
     async function fetchBooksy() {
-      document.getElementById('status').innerText = 'Pobieranie terminów z Booksy...';
+      document.getElementById('status').innerText = 'Pobieranie terminów...';
       try {
         const res = await fetch('/fetch-booksy');
         const data = await res.json();
