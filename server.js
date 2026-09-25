@@ -8,7 +8,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(express.json());
 app.use(express.static('.'));
 
-// Endpoint do integracji z Booksy dla zamsh. beauty
+// Booksy Mock
 app.get('/fetch-booksy', async (req, res) => {
   try {
     const fetchedSlots = [
@@ -16,15 +16,13 @@ app.get('/fetch-booksy', async (req, res) => {
       { day: 'Wtorek 29.09', hours: '10:00, 11:30, 15:00' },
       { day: 'Czwartek 01.10', hours: '13:00, 17:00' }
     ];
-
     res.json({ success: true, slots: fetchedSlots });
   } catch (err) {
-    console.error('Błąd pobierania z Booksy:', err);
-    res.status(500).json({ success: false, message: 'Nie udało się pobrać danych z Booksy' });
+    res.status(500).json({ success: false, message: 'Błąd Booksy' });
   }
 });
 
-// Standard Post
+// 1. Post Standardowy
 app.post('/generate', async (req, res) => {
   try {
     const { title, subtitle } = req.body;
@@ -37,7 +35,7 @@ app.post('/generate', async (req, res) => {
   }
 });
 
-// Przed i Po
+// 2. Przed i Po
 app.post('/generate-before-after', upload.fields([
   { name: 'before', maxCount: 1 },
   { name: 'after', maxCount: 1 }
@@ -60,7 +58,7 @@ app.post('/generate-before-after', upload.fields([
   }
 });
 
-// Wolne Terminy
+// 3. Wolne Terminy
 app.post('/generate-schedule', async (req, res) => {
   try {
     const { header, slots } = req.body;
@@ -75,5 +73,5 @@ app.post('/generate-schedule', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Serwer uruchomiony na port ${PORT}`);
+  console.log(`Serwer zamsh. uruchomiony na porcie ${PORT}`);
 });

@@ -38,7 +38,6 @@
       text-align: center;
       margin-bottom: 24px;
       font-weight: normal;
-      letter-spacing: 1px;
     }
 
     .section {
@@ -47,11 +46,7 @@
       border-bottom: 1px solid var(--border-color);
     }
 
-    h2 {
-      font-size: 1.1rem;
-      margin-bottom: 15px;
-      color: var(--text-color);
-    }
+    h2 { font-size: 1.1rem; margin-bottom: 15px; }
 
     label {
       display: block;
@@ -59,10 +54,9 @@
       color: var(--text-muted);
       margin-bottom: 5px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
-    input[type="text"], select {
+    input[type="text"], select, input[type="file"] {
       width: 100%;
       padding: 10px 12px;
       margin-bottom: 15px;
@@ -72,12 +66,7 @@
       background-color: #faf9f6;
     }
 
-    .slot-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
+    .slot-row { display: flex; gap: 10px; margin-bottom: 10px; }
     .slot-row input { margin-bottom: 0; }
 
     button {
@@ -89,11 +78,9 @@
       border-radius: 6px;
       font-size: 0.95rem;
       cursor: pointer;
-      transition: opacity 0.2s;
       margin-top: 5px;
     }
 
-    button:hover { opacity: 0.9; }
     button.secondary {
       background-color: transparent;
       color: var(--text-color);
@@ -101,11 +88,7 @@
       margin-bottom: 15px;
     }
 
-    .preview-area {
-      margin-top: 30px;
-      text-align: center;
-    }
-
+    .preview-area { margin-top: 30px; text-align: center; }
     .preview-area img {
       max-width: 100%;
       max-height: 500px;
@@ -115,11 +98,7 @@
       margin: 15px auto;
     }
 
-    #status {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-top: 10px;
-    }
+    #status { font-size: 0.9rem; color: var(--text-muted); margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -127,7 +106,7 @@
 <div class="container">
   <h1>zamsh. studio</h1>
 
-  <!-- WOLNE TERMINY -->
+  <!-- 1. WOLNE TERMINY -->
   <div class="section">
     <h2>1. Wolne Terminy (InstaStory)</h2>
     <button class="secondary" onclick="fetchBooksy()">Pobierz dane z Booksy</button>
@@ -146,7 +125,41 @@
     <button type="button" onclick="generateSchedule()">Generuj Grafikę Terminów</button>
   </div>
 
-  <!-- PODGLĄD WYGENEROWANEJ GRAFIKI -->
+  <!-- 2. PRZED I PO -->
+  <div class="section">
+    <h2>2. Przed i Po</h2>
+    <label>Zdjęcie PRZED</label>
+    <input type="file" id="beforeImg" accept="image/*">
+
+    <label>Zdjęcie PO</label>
+    <input type="file" id="afterImg" accept="image/*">
+
+    <label>Format</label>
+    <select id="baAspect">
+      <option value="9:16">9:16 (InstaStory)</option>
+      <option value="4:5">4:5 (Post Instagram)</option>
+      <option value="1:1">1:1 (Kwadrat)</option>
+    </select>
+
+    <label>Tytuł (Opcjonalnie)</label>
+    <input type="text" id="baTitle" placeholder="np. LAMINACJA BRZWI">
+
+    <button type="button" onclick="generateBeforeAfter()">Generuj Przed / Po</button>
+  </div>
+
+  <!-- 3. STANDARDOWY POST -->
+  <div class="section">
+    <h2>3. Post Standardowy (Kwadrat)</h2>
+    <label>Nagłówek</label>
+    <input type="text" id="postTitle" placeholder="np. CENNIK USŁUG">
+
+    <label>Podtytuł</label>
+    <input type="text" id="postSubtitle" placeholder="np. Obowiązuje od września">
+
+    <button type="button" onclick="generatePost()">Generuj Post</button>
+  </div>
+
+  <!-- PODGLĄD GRAFIKI -->
   <div class="preview-area">
     <h2>Podgląd / Pobieranie</h2>
     <p id="status">Wybierz opcję powyżej, aby wygenerować grafikę.</p>
@@ -169,74 +182,98 @@
     container.appendChild(row);
   }
 
-  async function fetchBooksy() {
-    const status = document.getElementById('status');
-    status.innerText = 'Pobieranie terminów z Booksy...';
-
-    try {
-      const res = await fetch('/fetch-booksy');
-      const data = await res.json();
-
-      if (data.success && data.slots) {
-        document.getElementById('slotsContainer').innerHTML = '';
-        data.slots.forEach(slot => {
-          addSlotRow(slot.day, slot.hours);
-        });
-        status.innerText = 'Pobrano terminy z Booksy!';
-      } else {
-        status.innerText = 'Błąd pobierania danych.';
-      }
-    } catch (err) {
-      console.error(err);
-      status.innerText = 'Nie udało się połączyć z serwerem.';
-    }
-  }
-
-  async function generateSchedule() {
+  async function showResult(response) {
     const status = document.getElementById('status');
     const img = document.getElementById('resultImage');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    status.innerText = 'Generowanie grafiki... Proszę czekać.';
-    img.style.display = 'none';
-    downloadBtn.style.display = 'none';
+    if (!response.ok) {
+      status.innerText = 'Błąd podczas generowania grafiki.';
+      return;
+    }
 
+    const blob = await response.blob();
+    const imageUrl = URL.createObjectURL(blob);
+
+    img.src = imageUrl;
+    img.style.display = 'block';
+
+    downloadBtn.href = imageUrl;
+    downloadBtn.style.display = 'block';
+
+    status.innerText = 'Grafika gotowa!';
+  }
+
+  async function fetchBooksy() {
+    document.getElementById('status').innerText = 'Pobieranie z Booksy...';
+    try {
+      const res = await fetch('/fetch-booksy');
+      const data = await res.json();
+      if (data.success && data.slots) {
+        document.getElementById('slotsContainer').innerHTML = '';
+        data.slots.forEach(s => addSlotRow(s.day, s.hours));
+        document.getElementById('status').innerText = 'Pobrano terminy z Booksy!';
+      }
+    } catch (err) {
+      document.getElementById('status').innerText = 'Błąd połączenia z serwerem.';
+    }
+  }
+
+  async function generateSchedule() {
+    document.getElementById('status').innerText = 'Generowanie...';
     const header = document.getElementById('scheduleHeader').value;
     const days = document.querySelectorAll('.slot-day');
     const hours = document.querySelectorAll('.slot-hours');
 
     const slots = [];
     days.forEach((dayInput, index) => {
-      const dayVal = dayInput.value.trim();
-      const hoursVal = hours[index].value.trim();
-      if (dayVal) {
-        slots.push({ day: dayVal, hours: hoursVal });
+      if (dayInput.value.trim()) {
+        slots.push({ day: dayInput.value.trim(), hours: hours[index].value.trim() });
       }
     });
 
-    try {
-      const res = await fetch('/generate-schedule', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ header, slots })
-      });
+    const res = await fetch('/generate-schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ header, slots })
+    });
+    showResult(res);
+  }
 
-      if (!res.ok) throw new Error('Błąd serwera');
+  async function generateBeforeAfter() {
+    const beforeFile = document.getElementById('beforeImg').files[0];
+    const afterFile = document.getElementById('afterImg').files[0];
 
-      const blob = await res.blob();
-      const imageUrl = URL.createObjectURL(blob);
-
-      img.src = imageUrl;
-      img.style.display = 'block';
-
-      downloadBtn.href = imageUrl;
-      downloadBtn.style.display = 'block';
-
-      status.innerText = 'Grafika gotowa!';
-    } catch (err) {
-      console.error(err);
-      status.innerText = 'Wystąpił błąd podczas generowania grafiki.';
+    if (!beforeFile || !afterFile) {
+      alert('Wybierz oba zdjęcia (Przed i Po)!');
+      return;
     }
+
+    document.getElementById('status').innerText = 'Przetwarzanie zdjęć...';
+    const formData = new FormData();
+    formData.append('before', beforeFile);
+    formData.append('after', afterFile);
+    formData.append('aspectRatio', document.getElementById('baAspect').value);
+    formData.append('title', document.getElementById('baTitle').value);
+
+    const res = await fetch('/generate-before-after', {
+      method: 'POST',
+      body: formData
+    });
+    showResult(res);
+  }
+
+  async function generatePost() {
+    document.getElementById('status').innerText = 'Generowanie...';
+    const title = document.getElementById('postTitle').value;
+    const subtitle = document.getElementById('postSubtitle').value;
+
+    const res = await fetch('/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, subtitle })
+    });
+    showResult(res);
   }
 </script>
 

@@ -1,42 +1,25 @@
-const { createCanvas, loadImage } = require('canvas');
+const sharp = require('sharp');
 
 /**
- * POMOCNICZA: Bezpieczne ustawianie stylu tekstu dla node-canvas
+ * POMOCNICZA: Escapowanie znaków XML w tekście
  */
-function setSafeFont(ctx, size = 30, weight = 'normal', family = 'sans-serif') {
-  // W środowisku headless Linux używamy wyłącznie podstawowych rodzin systemowych
-  ctx.font = `${weight} ${size}px ${family}`;
+function escapeXml(unsafe) {
+  if (!unsafe) return '';
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 /**
- * 1. MODUŁ: WOLNE TERMINY (9:16 InstaStory)
+ * 1. WOLNE TERMINY (9:16 InstaStory)
  */
-async function generateScheduleCanvas(headerText, slots = []) {
+async function generateScheduleCanvas(headerText = 'Wolne Terminy', slots = []) {
   const width = 1080;
   const height = 1920;
 
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext('2d');
-
-  // Wymuszenie czystego, beżowego tła
-  ctx.fillStyle = '#f7f5f0';
-  ctx.fillRect(0, 0, width, height);
-
-  // Nagłówek
-  ctx.fillStyle = '#2b2927';
-  setSafeFont(ctx, 56, 'normal', 'serif');
-  ctx.textAlign = 'center';
-  ctx.fillText(headerText || 'Wolne Terminy', width / 2, 260);
-
-  // Linia pod nagłówkiem
-  ctx.strokeStyle = '#e6e1d8';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(340, 310);
-  ctx.lineTo(740, 310);
-  ctx.stroke();
-
-  // Sortowanie chronologiczne
   const sortedSlots = [...slots].sort((a, b) => {
     const matchA = a.day ? a.day.match(/\d+/g) : null;
     const matchB = b.day ? b.day.match(/\d+/g) : null;
@@ -45,40 +28,37 @@ async function generateScheduleCanvas(headerText, slots = []) {
     return parseInt(matchA[0], 10) - parseInt(matchB[0], 10);
   });
 
-  // Lista terminów
   let currentY = 420;
   const rowSpacing = 130;
 
+  let slotsSvg = '';
   sortedSlots.forEach((item) => {
     if (!item.day) return;
+    const dayEsc = escapeXml(item.day.toUpperCase());
+    const hoursEsc = escapeXml(item.hours || '');
 
-    // Dzień
-    ctx.fillStyle = '#2b2927';
-    setSafeFont(ctx, 26, 'bold', 'sans-serif');
-    ctx.textAlign = 'center';
-    ctx.fillText(item.day.toUpperCase(), width / 2, currentY);
-
-    // Godziny
-    if (item.hours) {
-      ctx.fillStyle = '#8c857b';
-      setSafeFont(ctx, 22, 'normal', 'sans-serif');
-      ctx.fillText(item.hours, width / 2, currentY + 36);
-    }
-
+    slotsSvg += `
+      <text x="540" y="${currentY}" font-family="sans-serif" font-size="26" font-weight="bold" fill="#2b2927" text-anchor="middle">${dayEsc}</text>
+      <text x="540" y="${currentY + 36}" font-family="sans-serif" font-size="22" fill="#8c857b" text-anchor="middle">${hoursEsc}</text>
+    `;
     currentY += rowSpacing;
   });
 
-  // Znak wodny
-  ctx.fillStyle = '#2b2927';
-  setSafeFont(ctx, 32, 'normal', 'serif');
-  ctx.textAlign = 'center';
-  ctx.fillText('zamsh. studio', width / 2, height - 120);
+  const svg = `
+  <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100%" height="100%" fill="#f7f5f0"/>
+    <text x="540" y="260" font-family="serif" font-size="56" fill="#2b2927" text-anchor="middle">${escapeXml(headerText)}</text>
+    <line x1="340" y1="310" x2="740" y2="310" stroke="#e6e1d8" stroke-width="2"/>
+    ${slotsSvg}
+    <text x="540" y="${height - 120}" font-family="serif" font-size="32" fill="#2b2927" text-anchor="middle">zamsh. studio</text>
+  </svg>
+  `;
 
-  return canvas.toBuffer('image/png');
+  return await sharp(Buffer.from(svg)).png().toBuffer();
 }
 
 /**
- * 2. MODUŁ: PRZED I PO
+ * 2. PRZED I PO
  */
 async function generateBeforeAfter(beforeBuffer, afterBuffer, aspectRatio = '9:16', titleText = '') {
   let width = 1080;
@@ -87,101 +67,79 @@ async function generateBeforeAfter(beforeBuffer, afterBuffer, aspectRatio = '9:1
   if (aspectRatio === '1:1') height = 1080;
   else if (aspectRatio === '4:5') height = 1350;
 
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext('2d');
-
-  // Tło
-  ctx.fillStyle = '#f7f5f0';
-  ctx.fillRect(0, 0, width, height);
-
-  const imgBefore = await loadImage(beforeBuffer);
-  const imgAfter = await loadImage(afterBuffer);
-
-  const halfWidth = width / 2;
   const topHeaderHeight = titleText ? 140 : 80;
   const bottomFooterHeight = 100;
   const drawHeight = height - topHeaderHeight - bottomFooterHeight;
+  const halfWidth = Math.floor(width / 2) - 2;
 
-  drawCoverImage(ctx, imgBefore, 0, topHeaderHeight, halfWidth - 2, drawHeight);
-  drawCoverImage(ctx, imgAfter, halfWidth + 2, topHeaderHeight, halfWidth - 2, drawHeight);
+  // Przetworzenie zdjęć Przed i Po do dokładnego wymiaru (Crop / Cover)
+  const resizedBefore = await sharp(beforeBuffer)
+    .resize(halfWidth, drawHeight, { fit: 'cover' })
+    .toBuffer();
 
-  // Linia podziału
-  ctx.strokeStyle = '#f7f5f0';
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(halfWidth, topHeaderHeight);
-  ctx.lineTo(halfWidth, topHeaderHeight + drawHeight);
-  ctx.stroke();
+  const resizedAfter = await sharp(afterBuffer)
+    .resize(halfWidth, drawHeight, { fit: 'cover' })
+    .toBuffer();
 
-  drawBadge(ctx, 'PRZED', 40, topHeaderHeight + 30);
-  drawBadge(ctx, 'PO', halfWidth + 40, topHeaderHeight + 30);
+  // Szablon SVG jako nakładka (Tło, Napisy, Ramki)
+  const titleSvg = titleText 
+    ? `<text x="540" y="75" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2b2927" text-anchor="middle">${escapeXml(titleText.toUpperCase())}</text>`
+    : '';
 
-  if (titleText) {
-    ctx.fillStyle = '#2b2927';
-    setSafeFont(ctx, 28, 'bold', 'sans-serif');
-    ctx.textAlign = 'center';
-    ctx.fillText(titleText.toUpperCase(), width / 2, 75);
-  }
+  const overlaySvg = `
+  <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    ${titleSvg}
+    
+    <!-- Badges PRZED / PO -->
+    <rect x="40" y="${topHeaderHeight + 30}" width="90" height="36" fill="#f7f5f0" rx="4"/>
+    <text x="85" y="${topHeaderHeight + 53}" font-family="sans-serif" font-size="14" font-weight="bold" fill="#2b2927" text-anchor="middle">PRZED</text>
+    
+    <rect x="${halfWidth + 44}" y="${topHeaderHeight + 30}" width="90" height="36" fill="#f7f5f0" rx="4"/>
+    <text x="${halfWidth + 89}" y="${topHeaderHeight + 53}" font-family="sans-serif" font-size="14" font-weight="bold" fill="#2b2927" text-anchor="middle">PO</text>
 
-  ctx.fillStyle = '#2b2927';
-  setSafeFont(ctx, 28, 'normal', 'serif');
-  ctx.textAlign = 'center';
-  ctx.fillText('zamsh. studio', width / 2, height - 40);
+    <!-- Stopka -->
+    <text x="540" y="${height - 40}" font-family="serif" font-size="28" fill="#2b2927" text-anchor="middle">zamsh. studio</text>
+  </svg>
+  `;
 
-  return canvas.toBuffer('image/png');
+  // Kompozycja elementów w Sharp
+  return await sharp({
+    create: {
+      width,
+      height,
+      channels: 4,
+      background: { r: 247, g: 245, b: 240, alpha: 1 }
+    }
+  })
+  .composite([
+    { input: resizedBefore, top: topHeaderHeight, left: 0 },
+    { input: resizedAfter, top: topHeaderHeight, left: halfWidth + 4 },
+    { input: Buffer.from(overlaySvg), top: 0, left: 0 }
+  ])
+  .png()
+  .toBuffer();
 }
 
 /**
- * 3. MODUŁ: STANDARD
+ * 3. STANDARDOWY POST (Kwadrat 1:1)
  */
-async function generatePost(title, subtitle) {
-  const canvas = createCanvas(1080, 1080);
-  const ctx = canvas.getContext('2d');
+async function generatePost(title = 'zamsh.', subtitle = '') {
+  const width = 1080;
+  const height = 1080;
 
-  ctx.fillStyle = '#f7f5f0';
-  ctx.fillRect(0, 0, 1080, 1080);
+  const subtitleSvg = subtitle
+    ? `<text x="540" y="560" font-family="sans-serif" font-size="22" fill="#8c857b" text-anchor="middle">${escapeXml(subtitle)}</text>`
+    : '';
 
-  ctx.fillStyle = '#2b2927';
-  setSafeFont(ctx, 48, 'normal', 'serif');
-  ctx.textAlign = 'center';
-  ctx.fillText(title || 'zamsh.', 540, 500);
+  const svg = `
+  <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100%" height="100%" fill="#f7f5f0"/>
+    <text x="540" y="500" font-family="serif" font-size="48" fill="#2b2927" text-anchor="middle">${escapeXml(title)}</text>
+    ${subtitleSvg}
+  </svg>
+  `;
 
-  if (subtitle) {
-    setSafeFont(ctx, 20, 'normal', 'sans-serif');
-    ctx.fillStyle = '#8c857b';
-    ctx.fillText(subtitle, 540, 560);
-  }
-
-  return canvas.toBuffer('image/png');
-}
-
-function drawCoverImage(ctx, img, x, y, targetWidth, targetHeight) {
-  const imgRatio = img.width / img.height;
-  const targetRatio = targetWidth / targetHeight;
-
-  let sourceX = 0, sourceY = 0, sourceWidth = img.width, sourceHeight = img.height;
-
-  if (imgRatio > targetRatio) {
-    sourceWidth = img.height * targetRatio;
-    sourceX = (img.width - sourceWidth) / 2;
-  } else {
-    sourceHeight = img.width / targetRatio;
-    sourceY = (img.height - sourceHeight) / 2;
-  }
-
-  ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, targetWidth, targetHeight);
-}
-
-function drawBadge(ctx, text, x, y) {
-  ctx.save();
-  ctx.fillStyle = 'rgba(247, 245, 240, 0.9)';
-  ctx.fillRect(x, y, 90, 36);
-
-  ctx.fillStyle = '#2b2927';
-  setSafeFont(ctx, 12, 'bold', 'sans-serif');
-  ctx.textAlign = 'center';
-  ctx.fillText(text, x + 45, y + 22);
-  ctx.restore();
+  return await sharp(Buffer.from(svg)).png().toBuffer();
 }
 
 module.exports = { generatePost, generateBeforeAfter, generateScheduleCanvas };
