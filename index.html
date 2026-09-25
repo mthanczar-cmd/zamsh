@@ -57,8 +57,11 @@
     /* Schedule Slots */
     .schedule-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
     .schedule-row input { flex: 1; }
-    .btn-remove { background: #e57373; color: white; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 18px; line-height: 1; }
-    .btn-secondary { background: #eae6df; color: var(--accent-color); border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; margin-bottom: 16px; }
+    .btn-remove { background: #e57373; color: white; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 18px; line-height: 1; flex-shrink: 0; }
+    
+    .actions-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .btn-secondary { flex: 1; background: #eae6df; color: var(--accent-color); border: none; padding: 10px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-clear { background: #f0e2e2; color: #a94444; border: none; padding: 10px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
 
     .btn-primary {
       width: 100%; padding: 14px; background: var(--accent-color); color: #fff; border: none; border-radius: 12px; font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: opacity 0.2s;
@@ -131,7 +134,7 @@
     <!-- MODULE 2: WOLNE TERMINY -->
     <div id="tab-schedule" class="tab-content">
       <div class="card">
-        <form id="scheduleForm">
+        <form id="scheduleForm" onsubmit="return false;">
           <div class="form-group">
             <label>Nagłówek Story</label>
             <input type="text" id="schedHeader" value="Wolne Terminy" required>
@@ -141,14 +144,18 @@
             <label>Lista Dni i Godzin</label>
             <div id="scheduleSlots">
               <div class="schedule-row">
-                <input type="text" placeholder="Dzień, np. Poniedziałek 28.09" class="sched-day">
-                <input type="text" placeholder="Godziny, np. 12:00, 15:30" class="sched-hours">
+                <input type="text" placeholder="np. Poniedziałek 28.09" class="sched-day">
+                <input type="text" placeholder="np. 12:00, 15:30" class="sched-hours">
               </div>
             </div>
-            <button type="button" class="btn-secondary" onclick="addScheduleRow()">+ Dodaj kolejny dzień</button>
+            
+            <div class="actions-row">
+              <button type="button" class="btn-secondary" onclick="addScheduleRow()">+ Dodaj dzień</button>
+              <button type="button" class="btn-clear" onclick="clearScheduleRows()">Wyczyść dni</button>
+            </div>
           </div>
 
-          <button type="submit" class="btn-primary">Generuj Grafikę Terminów</button>
+          <button type="button" onclick="submitSchedule()" class="btn-primary">Generuj Grafikę Terminów</button>
         </form>
       </div>
     </div>
@@ -217,11 +224,56 @@
       const div = document.createElement('div');
       div.className = 'schedule-row';
       div.innerHTML = `
-        <input type="text" placeholder="Dzień, np. Wtorek 29.09" class="sched-day">
-        <input type="text" placeholder="Godziny, np. 10:00, 14:00" class="sched-hours">
+        <input type="text" placeholder="np. Wtorek 29.09" class="sched-day">
+        <input type="text" placeholder="np. 10:00, 14:00" class="sched-hours">
         <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
       `;
       container.appendChild(div);
+    }
+
+    function clearScheduleRows() {
+      const container = document.getElementById('scheduleSlots');
+      container.innerHTML = `
+        <div class="schedule-row">
+          <input type="text" placeholder="np. Poniedziałek 28.09" class="sched-day">
+          <input type="text" placeholder="np. 12:00, 15:30" class="sched-hours">
+        </div>
+      `;
+    }
+
+    // Obsługa generowania Terminów bez odświeżania i czyszczenia wierszy
+    async function submitSchedule() {
+      showLoading();
+
+      const header = document.getElementById('schedHeader').value;
+      const days = document.querySelectorAll('.sched-day');
+      const hours = document.querySelectorAll('.sched-hours');
+
+      const items = [];
+      days.forEach((dayInput, index) => {
+        if (dayInput.value.trim()) {
+          items.push({ day: dayInput.value.trim(), hours: hours[index].value.trim() });
+        }
+      });
+
+      if (items.length === 0) {
+        alert('Wpisz przynajmniej jeden dzień!');
+        hideLoading();
+        return;
+      }
+
+      try {
+        const res = await fetch('/generate-schedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ header, slots: items })
+        });
+        const blob = await res.blob();
+        showResult(URL.createObjectURL(blob));
+      } catch (err) {
+        alert('Błąd generowania');
+        hideLoading();
+      }
     }
 
     // Formularz Przed / Po
@@ -246,36 +298,6 @@
       showLoading();
       try {
         const res = await fetch('/generate-before-after', { method: 'POST', body: formData });
-        const blob = await res.blob();
-        showResult(URL.createObjectURL(blob));
-      } catch (err) {
-        alert('Błąd generowania');
-        hideLoading();
-      }
-    });
-
-    // Formularz Wolne Terminy
-    document.getElementById('scheduleForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      showLoading();
-
-      const header = document.getElementById('schedHeader').value;
-      const days = document.querySelectorAll('.sched-day');
-      const hours = document.querySelectorAll('.sched-hours');
-
-      const items = [];
-      days.forEach((dayInput, index) => {
-        if (dayInput.value.trim()) {
-          items.push({ day: dayInput.value.trim(), hours: hours[index].value.trim() });
-        }
-      });
-
-      try {
-        const res = await fetch('/generate-schedule', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ header, slots: items })
-        });
         const blob = await res.blob();
         showResult(URL.createObjectURL(blob));
       } catch (err) {
@@ -317,6 +339,7 @@
       const img = document.getElementById('resultImg');
       img.src = url;
       img.style.display = 'block';
+      img.scrollIntoView({ behavior: 'smooth' });
     }
 
     function hideLoading() {
