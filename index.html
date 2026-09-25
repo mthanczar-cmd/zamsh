@@ -70,9 +70,9 @@
     }
     .btn-primary:active { opacity: 0.85; }
 
-    /* Preview Section */
-    .preview-card { text-align: center; display: none; }
-    .preview-img { width: 100%; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 10px; }
+    /* Preview Section - Wymuszenie jasnego tła dla podglądu */
+    .preview-card { text-align: center; display: none; background: #ffffff; }
+    .preview-img { width: 100%; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 10px; background-color: #f7f5f0; min-height: 200px; display: block; object-fit: contain; }
     
     .spinner { display: none; margin: 20px auto; border: 3px solid #f3f3f3; border-top: 3px solid var(--accent-color); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -305,6 +305,9 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ header, slots: items })
         });
+        
+        if (!res.ok) throw new Error('Błąd serwera');
+        
         const blob = await res.blob();
         showResult(URL.createObjectURL(blob));
       } catch (err) {
@@ -334,6 +337,9 @@
       showLoading();
       try {
         const res = await fetch('/generate-before-after', { method: 'POST', body: formData });
+        
+        if (!res.ok) throw new Error('Błąd serwera');
+
         const blob = await res.blob();
         showResult(URL.createObjectURL(blob));
       } catch (err) {
@@ -355,6 +361,9 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ title, subtitle })
         });
+        
+        if (!res.ok) throw new Error('Błąd serwera');
+
         const blob = await res.blob();
         showResult(URL.createObjectURL(blob));
       } catch (err) {
@@ -366,7 +375,9 @@
     function showLoading() {
       document.getElementById('previewCard').style.display = 'block';
       document.getElementById('spinner').style.display = 'block';
-      document.getElementById('resultImg').style.display = 'none';
+      const img = document.getElementById('resultImg');
+      img.style.display = 'none';
+      img.src = '';
     }
 
     function showResult(url) {
