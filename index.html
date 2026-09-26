@@ -56,24 +56,55 @@
       z-index: 100;
     }
 
-    .brand {
-      padding: 0 10px 20px 10px;
-    }
-
-    .brand h1 {
+    .brand-box {
+      text-align: center;
+      padding: 10px 0;
       font-family: 'Playfair Display', serif;
-      font-size: 1.8rem;
-      font-weight: 600;
-      letter-spacing: -0.5px;
+      color: #000000;
     }
 
-    .brand span {
-      font-size: 0.75rem;
-      text-transform: uppercase;
+    .brand-inner {
+      border: 1.5px solid #000000;
+      padding: 12px 10px 8px 10px;
+      position: relative;
+      margin-bottom: 8px;
+    }
+
+  .brand-inner h2 {
+      font-size: 2.1rem;
+      font-weight: 500;
       letter-spacing: 2px;
-      color: var(--text-muted);
-      display: block;
-      margin-top: 2px;
+      line-height: 1;
+      margin: 0;
+      color: #000000;
+    }
+
+  .brand-sub-line {
+      position: absolute;
+      bottom: -7px;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+  .brand-sub-line span {
+      background: #ffffff;
+      padding: 0 8px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 4px;
+      color: #000000;
+    }
+
+  .brand-tagline {
+      font-size: 0.72rem;
+     letter-spacing: 1.5px;
+     color: #000000;
+     margin-top: 6px;
+     font-weight: 400;
     }
 
     .nav-menu {
@@ -453,9 +484,14 @@
 
   <!-- SIDEBAR NAWIGACYJNY -->
   <aside id="sidebar">
-    <div class="brand" style="display: var(--desktop-only, block);">
-      <h1>zamsh.</h1>
-      <span>studio dashboard</span>
+    <div class="brand-box" style="display: var(--desktop-only, block);">
+    <div class="brand-inner">
+        <h2>ZAMSH</h2>
+        <div class="brand-sub-line">
+            <span>BEAUTY</span>
+        </div>
+    </div>
+    <p class="brand-tagline">STYLIZACJA RZĘS I BRWI</p>
     </div>
 
     <div class="nav-section-title">Aplikacje</div>
