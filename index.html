@@ -814,11 +814,36 @@
       <div class="top-header">
         <div>
           <h2>Ustawienia Studia</h2>
-          <p>Konfiguracja połączeń i szablonów.</p>
+          <p>Zarządzanie bezpieczeństwem i kodem PIN do aplikacji.</p>
         </div>
       </div>
-      <div class="card">
-        <p style="color: var(--text-muted);">Ustawienia połączenia z Booksy i Instagramem.</p>
+      
+      <div class="card" style="max-width: 500px;">
+        <div class="card-header">
+          <div class="card-title"><i data-lucide="shield-lock"></i> Zmień Kod PIN</div>
+        </div>
+
+        <form onsubmit="handleChangePin(event)">
+          <div class="form-group">
+            <label>Aktualny PIN</label>
+            <input type="password" id="currentPinInput" placeholder="****" required style="letter-spacing: 4px;">
+          </div>
+
+          <div class="form-group">
+            <label>Nowy PIN</label>
+            <input type="password" id="newPinInput" placeholder="****" required style="letter-spacing: 4px;">
+          </div>
+
+          <div class="form-group">
+            <label>Powtórz Nowy PIN</label>
+            <input type="password" id="confirmPinInput" placeholder="****" required style="letter-spacing: 4px;">
+          </div>
+
+          <button type="submit" class="btn">
+            <i data-lucide="key"></i> Zapisz Nowy PIN
+          </button>
+        </form>
+        <p id="pinChangeStatus" style="font-size: 0.85rem; margin-top: 12px; text-align: center; font-weight: 600;"></p>
       </div>
     </div>
 
@@ -1095,11 +1120,18 @@
   // USTAWIENIA LOGOWANIA
   const DEFAULT_PIN = "1234"; // TUTAJ ZMIENIASZ DOMYŚLNY PIN
 
+ // --- ZARZĄDZANIE PIN-EM I AUTORYZACJĄ ---
+
+  // Pobieranie aktualnego PIN-u (domyślnie "1234" przy pierwszym uruchomieniu)
+  function getAppPin() {
+    return localStorage.getItem('zamsh_pin') || "1234";
+  }
+
   function checkAuth() {
     const isLogged = localStorage.getItem('zamsh_auth');
     const overlay = document.getElementById('authOverlay');
     if (!overlay) return;
-    
+
     if (isLogged === 'true') {
       overlay.style.display = 'none';
     } else {
@@ -1109,10 +1141,11 @@
 
   function handleLogin(event) {
     event.preventDefault();
-    const pin = document.getElementById('pinInput').value;
+    const inputPin = document.getElementById('pinInput').value;
     const errorMsg = document.getElementById('authError');
+    const currentPin = getAppPin();
 
-    if (pin === DEFAULT_PIN) {
+    if (inputPin === currentPin) {
       localStorage.setItem('zamsh_auth', 'true');
       if (errorMsg) errorMsg.style.display = 'none';
       document.getElementById('pinInput').value = '';
@@ -1127,10 +1160,50 @@
     checkAuth();
   }
 
+  // Obsługa formularza zmiany PIN-u w Ustawieniach
+  function handleChangePin(event) {
+    event.preventDefault();
+    const currentInput = document.getElementById('currentPinInput').value;
+    const newPin = document.getElementById('newPinInput').value;
+    const confirmPin = document.getElementById('confirmPinInput').value;
+    const status = document.getElementById('pinChangeStatus');
+
+    if (currentInput !== getAppPin()) {
+      status.style.color = "#a83232";
+      status.innerText = "Niepoprawny aktualny PIN!";
+      return;
+    }
+
+    if (newPin !== confirmPin) {
+      status.style.color = "#a83232";
+      status.innerText = "Nowe kody PIN nie są identyczne!";
+      return;
+    }
+
+    if (newPin.length < 4) {
+      status.style.color = "#a83232";
+      status.innerText = "PIN powinien mieć co najmniej 4 znaki!";
+      return;
+    }
+
+    // Zapis nowego PIN-u w pamięci przeglądarki
+    localStorage.setItem('zamsh_pin', newPin);
+    status.style.color = "#2e7d32";
+    status.innerText = "Kod PIN został pomyślnie zmieniony!";
+
+    // Wyczyszczenie pól formularza
+    document.getElementById('currentPinInput').value = '';
+    document.getElementById('newPinInput').value = '';
+    document.getElementById('confirmPinInput').value = '';
+  }
+
   // Weryfikacja sesji przy wczytaniu
   document.addEventListener('DOMContentLoaded', () => {
-    checkAuth();
-  });
+  checkAuth();
+  if (typeof renderClients === 'function') {
+    renderClients();
+  }
+});
 </script>
 
 </body>
