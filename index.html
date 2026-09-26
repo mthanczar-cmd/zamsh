@@ -2,32 +2,54 @@
 <html lang="pl">
 <head>
   <!-- LANDING PAGE & LOGOWANIE -->
-  <div id="authOverlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #f4f2ed; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-    <div style="background: #ffffff; padding: 40px 30px; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border); max-width: 400px; width: 100%; text-align: center;">
+<!-- EKRAN LOGOWANIA / WYBÓR UŻYTKOWNIKA -->
+  <div id="authOverlay" style="position: fixed; inset: 0; background: rgba(15, 15, 18, 0.96); backdrop-filter: blur(12px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div class="card" style="width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border-color, #333);">
       
-      <!-- LOGO -->
-      <div class="brand-box" style="margin-bottom: 24px;">
-        <div class="brand-inner">
-          <h2>ZAMSH</h2>
-          <div class="brand-sub-line">
-            <span>BEAUTY</span>
+      <!-- WIDOK 1: WYBÓR UŻYTKOWNIKA -->
+      <div id="userSelectStep">
+        <h2 style="margin-bottom: 8px;">ZAMSH BEAUTY</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">Wybierz profil, aby się zalogować</p>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Kafel Zuzia -->
+          <div onclick="selectUserForLogin('user', 'Zuzia')" style="display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--border-color, #333); border-radius: 12px; cursor: pointer; transition: 0.2s; text-align: left; background: rgba(255,255,255,0.03);">
+            <div class="avatar" style="width: 44px; height: 44px; font-weight: bold; background: #e0a96d; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center;">Z</div>
+            <div>
+              <div style="font-weight: 600; font-size: 1rem;">Zuzia</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Właścicielka Studio</div>
+            </div>
+          </div>
+
+          <!-- Kafel Michał -->
+          <div onclick="selectUserForLogin('admin', 'Michał')" style="display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--border-color, #333); border-radius: 12px; cursor: pointer; transition: 0.2s; text-align: left; background: rgba(255,255,255,0.03);">
+            <div class="avatar" style="width: 44px; height: 44px; font-weight: bold; background: #4a90e2; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">M</div>
+            <div>
+              <div style="font-weight: 600; font-size: 1rem;">Michał</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Programista / Admin</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <h3 style="font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 8px;">Studio Dashboard</h3>
-      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 24px;">Wprowadź kod PIN, aby uzyskać dostęp do bazy klientek i narzędzi.</p>
-
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="form-group" style="margin-bottom: 16px;">
-          <input type="password" id="pinInput" placeholder="Kod PIN / Hasło" style="text-align: center; font-size: 1.2rem; letter-spacing: 4px;" required>
-        </div>
-        <button type="submit" class="btn">
-          <i data-lucide="lock"></i> Zaloguj się
+      <!-- WIDOK 2: WPISYWANIE PINU (Domyślnie ukryty) -->
+      <div id="pinStep" style="display: none;">
+        <button onclick="backToUserSelect()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; margin-bottom: 12px; display: flex; align-items: center; gap: 4px; margin-left: auto; margin-right: auto;">
+          ← Zmień użytkownika
         </button>
-      </form>
-      
-      <p id="authError" style="color: #a83232; font-size: 0.8rem; margin-top: 12px; display: none;">Nieprawidłowy kod PIN!</p>
+
+        <h3 id="selectedUserTitle" style="margin-bottom: 4px;">Wpisz PIN</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Podaj kod dostępu do swojego profilu</p>
+
+        <form onsubmit="handleLogin(event)">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <input type="password" id="pinInput" placeholder="****" required maxlength="8" style="letter-spacing: 6px; text-align: center; font-size: 1.4rem; padding: 10px;">
+          </div>
+          <button type="submit" class="btn" style="width: 100%;">Zaloguj się</button>
+        </form>
+        <p id="authError" style="color: #e53935; font-size: 0.85rem; margin-top: 12px; display: none;">Niepoprawny kod PIN!</p>
+      </div>
+
     </div>
   </div>
   <!-- Logo App-->
@@ -1196,7 +1218,62 @@
     document.getElementById('newPinInput').value = '';
     document.getElementById('confirmPinInput').value = '';
   }
+let selectedRole = 'user';
+let selectedUserName = 'Zuzia';
 
+// 1. Wybór kafelka użytkownika
+function selectUserForLogin(role, name) {
+  selectedRole = role;
+  selectedUserName = name;
+  
+  // Przełączenie widoków
+  document.getElementById('userSelectStep').style.display = 'none';
+  document.getElementById('pinStep').style.display = 'block';
+  
+  // Aktualizacja nagłówka i czyszczenie pola PIN
+  document.getElementById('selectedUserTitle').innerText = `Cześć ${name}! Wpisz PIN`;
+  const pinInput = document.getElementById('pinInput');
+  pinInput.value = '';
+  pinInput.focus();
+}
+
+// 2. Powrót do wyboru użytkownika
+function backToUserSelect() {
+  document.getElementById('userSelectStep').style.display = 'block';
+  document.getElementById('pinStep').style.display = 'none';
+  document.getElementById('authError').style.display = 'none';
+}
+
+// 3. Obsługa logowania / weryfikacji PIN
+function handleLogin(event) {
+  event.preventDefault();
+  const pinInput = document.getElementById('pinInput').value;
+  const authError = document.getElementById('authError');
+
+  // Ustaw własne PIN-y dla profili:
+  const validPins = {
+    'Zuzia': '1234',   // Ustaw właściwy PIN dla Zuzi
+    'Michał': '9999'   // Ustaw właściwy PIN dla Michała
+  };
+
+  if (pinInput === validPins[selectedUserName]) {
+    // Ukryj overlay logowania
+    document.getElementById('authOverlay').style.display = 'none';
+    
+    // Zapisz sesję w localStorage
+    localStorage.setItem('currentUser', JSON.stringify({
+      name: selectedUserName,
+      role: selectedRole
+    }));
+
+    if (typeof applyUserPermissions === 'function') {
+      applyUserPermissions(selectedRole);
+    }
+  } else {
+    authError.innerText = 'Niepoprawny kod PIN!';
+    authError.style.display = 'block';
+  }
+}
   // Weryfikacja sesji przy wczytaniu
   document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
