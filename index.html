@@ -56,57 +56,85 @@
       z-index: 100;
     }
 
-    .brand-box {
+   .brand-box {
       text-align: center;
       padding: 10px 0;
       font-family: 'Playfair Display', serif;
       color: #000000;
-    }
+      max-width: 170px;     /* Ograniczenie szerokości całości */
+      margin: 0 auto;       /* Wyśrodkowanie w sidebarze */
+}
 
     .brand-inner {
-      border: 1.5px solid #000000;
-      padding: 12px 10px 8px 10px;
+      border: 1.2px solid #000000;
+      padding: 8px 6px 6px 6px;
       position: relative;
-      margin-bottom: 8px;
-    }
+      margin-bottom: 6px;
+}
 
-  .brand-inner h2 {
-      font-size: 2.1rem;
+    .brand-inner h2 {
+     font-size: 1.6rem;    /* Zmniejszony główny napis ZAMSH */
       font-weight: 500;
-      letter-spacing: 2px;
+     letter-spacing: 2px;
       line-height: 1;
-      margin: 0;
-      color: #000000;
-    }
+     margin: 0;
+     color: #000000;
+}
 
-  .brand-sub-line {
+    .brand-sub-line {
       position: absolute;
-      bottom: -7px;
-      left: 0;
+     bottom: -6px;
+     left: 0;
       right: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
+}
 
-  .brand-sub-line span {
-      background: #ffffff;
-      padding: 0 8px;
+    .brand-sub-line span {
+      background: var(--sidebar-bg, #ffffff);
+      padding: 0 6px;
       font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.65rem;
-      font-weight: 600;
-      letter-spacing: 4px;
+      font-size: 0.55rem;   /* Zmniejszony napis BEAUTY */
+     font-weight: 600;
+     letter-spacing: 3px;
       color: #000000;
-    }
+}
 
-  .brand-tagline {
-      font-size: 0.72rem;
-     letter-spacing: 1.5px;
-     color: #000000;
-     margin-top: 6px;
-     font-weight: 400;
-    }
+    .brand-tagline {
+      font-size: 0.58rem;   /* Zmniejszony podpis STYLIZACJA RZĘS I BRWI */
+      letter-spacing: 1px;
+      color: #000000;
+      margin-top: 5px;
+      font-weight: 400;
+  }
+  
+    
 
+    .brand-box-mobile {
+      padding: 2px 0;
+    transform: scale(0.85); /* Lekkie zmniejszenie proporcji do paska mobilnego */
+  }
+
+   .brand-box-mobile .brand-inner {
+      padding: 6px 8px 5px 8px;
+      margin-bottom: 4px;
+  }
+
+    .brand-box-mobile .brand-inner h2 {
+      font-size: 1.5rem;
+  }
+
+    .brand-box-mobile .brand-sub-line span {
+     font-size: 0.5rem;
+     padding: 0 5px;
+      letter-spacing: 3px;
+  }
+
+   .brand-box-mobile .brand-tagline {
+      font-size: 0.58rem;
+     margin-top: 3px;
+  }
     .nav-menu {
       list-style: none;
       display: flex;
@@ -474,9 +502,15 @@
 
   <!-- NAGŁÓWEK DLA TELEFONÓW -->
   <header class="mobile-header">
-    <div class="brand">
-      <h1>zamsh.</h1>
+    <div class="brand-box brand-box-mobile">
+    <div class="brand-inner">
+        <h2>ZAMSH</h2>
+        <div class="brand-sub-line">
+            <span>BEAUTY</span>
+        </div>
     </div>
+    <p class="brand-tagline">STYLIZACJA RZĘS I BRWI</p>
+  </div>
     <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
       <i data-lucide="menu" id="menuIcon"></i>
     </button>
