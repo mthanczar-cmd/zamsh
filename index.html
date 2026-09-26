@@ -1274,8 +1274,41 @@ function handleLogin(event) {
     authError.style.display = 'block';
   }
 }
-  // Weryfikacja sesji przy wczytaniu
-  document.addEventListener('DOMContentLoaded', () => {
+ // Dynamiczna zmiana danych w panelu bocznym
+function applyUserPermissions(role) {
+  const savedUser = JSON.parse(localStorage.getItem('currentUser'));
+  const userName = savedUser ? savedUser.name : (role === 'admin' ? 'Michał' : 'Zuzia');
+  
+  // Szukamy elementów w panelu bocznym
+  const nameEl = document.querySelector('.user-info .name') || document.querySelector('.sidebar .user-name');
+  const roleEl = document.querySelector('.user-info .role') || document.querySelector('.sidebar .user-role');
+  const avatarEl = document.querySelector('.sidebar .avatar') || document.querySelector('.user-avatar');
+
+  // Podmieniamy tekst na ekranie
+  if (nameEl) nameEl.innerText = userName;
+  if (roleEl) roleEl.innerText = (role === 'admin') ? 'Programista / Admin' : 'Właścicielka Studio';
+  if (avatarEl) avatarEl.innerText = userName.charAt(0);
+
+  // Pokazujemy/ukrywamy elementy tylko dla Admina
+  const adminElements = document.querySelectorAll('.admin-only');
+  adminElements.forEach(el => {
+    el.style.display = (role === 'admin') ? 'block' : 'none';
+  });
+}
+
+// Weryfikacja sesji przy wczytaniu
+function checkAuth() {
+  const savedUser = JSON.parse(localStorage.getItem('currentUser'));
+  
+  if (savedUser && savedUser.name) {
+    document.getElementById('authOverlay').style.display = 'none';
+    applyUserPermissions(savedUser.role);
+  } else {
+    document.getElementById('authOverlay').style.display = 'flex';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
   if (typeof renderClients === 'function') {
     renderClients();
