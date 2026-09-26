@@ -713,11 +713,53 @@
       <div class="top-header">
         <div>
           <h2>Baza Klientek</h2>
-          <p>Moduł do zarządzania kartotekami klientek.</p>
+          <p>Zarządzaj kartotekami klientek i wysyłaj szybkie powiadomienia.</p>
         </div>
       </div>
-      <div class="card">
-        <p style="color: var(--text-muted);">Kartoteki klientek oraz historia wizyt pojawią się tutaj niedługo.</p>
+
+      <div class="dashboard-grid">
+        <!-- FORMULARZ DODAWANIA KLIENTKI -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="user-plus"></i> Dodaj Nową Klientkę</div>
+            </div>
+
+            <form id="addClientForm" onsubmit="saveClient(event)">
+              <div class="form-group">
+                <label>Imię i Nazwisko</label>
+                <input type="text" id="clientName" placeholder="np. Anna Kowalska" required>
+              </div>
+
+              <div class="form-group">
+                <label>Numer Telefonu</label>
+                <input type="text" id="clientPhone" placeholder="np. 500111222" required>
+              </div>
+
+              <div class="form-group">
+                <label>Ważne Informacje (Alergie, Skręt, Zalecenia)</label>
+                <input type="text" id="clientNotes" placeholder="np. Alergia na czarny klej, skręt C, długość 10-12mm">
+              </div>
+
+              <button type="submit" class="btn">
+                <i data-lucide="save"></i> Zapisz Klientkę
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- LISTA ZAPISANYCH KLIENTEK -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i data-lucide="users"></i> Lista Klientek (<span id="clientsCount">0</span>)</div>
+            </div>
+
+            <div id="clientsListContainer" style="display: flex; flex-direction: column; gap: 12px; max-height: 500px; overflow-y: auto;">
+              <!-- Tutaj dynamicznie pojawią się karty klientek -->
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -903,5 +945,120 @@
     navigator.serviceWorker.register('/sw.js');
   }
   </script>
+
+<script>
+  // POBIERANIE I ZAPISYWANIE W LOCALSTORAGE (PAMIĘĆ NA STAŁE)
+  function getStoredClients() {
+    const data = localStorage.getItem('zamsh_clients');
+    return data ? JSON.parse(data) : [];
+  }
+
+  function saveClientsToStorage(clients) {
+    localStorage.setItem('zamsh_clients', JSON.stringify(clients));
+  }
+
+  // DODAWANIE NOWEJ KLIENTKI
+  function saveClient(event) {
+    event.preventDefault();
+    const name = document.getElementById('clientName').value.trim();
+    const phone = document.getElementById('clientPhone').value.trim();
+    const notes = document.getElementById('clientNotes').value.trim();
+
+    if (!name || !phone) return;
+
+    const clients = getStoredClients();
+    const newClient = {
+      id: Date.now(),
+      name: name,
+      phone: phone,
+      notes: notes || 'Brak uwag'
+    };
+
+    clients.unshift(newClient); // Dodaj na początku listy
+    saveClientsToStorage(clients);
+
+    // Reset formularza
+    document.getElementById('addClientForm').reset();
+    renderClients();
+  }
+
+  // USUWANIE KLIENTKI
+  function deleteClient(id) {
+    if (confirm('Czy na pewno chcesz usunąć ten profil klientki?')) {
+      let clients = getStoredClients();
+      clients = clients.filter(c => c.id !== id);
+      saveClientsToStorage(clients);
+      renderClients();
+    }
+  }
+
+  // WYSYŁANIE SMS / WHATSAPP
+  function sendNotification(phone, name, type) {
+    // Czyszczenie numeru ze zbędnych spacji/myślników
+    const cleanPhone = phone.replace(/\D/g, '');
+    let text = '';
+
+    if (type === 'reminder') {
+      text = `Cześć ${name}! Przypominam o naszej nadchodzącej wizycie w ZAMSH BEAUTY. Do zobaczenia! ✨`;
+    } else if (type === 'followup') {
+      text = `Cześć ${name}! Jak miewają się Twoje rzęsy/brwi po wizycie w ZAMSH BEAUTY? Daj znać, gdybyś potrzebowała jakichś wskazówek! 🖤`;
+    }
+
+    // Otwiera domyślną aplikację SMS na telefonie z gotową treścią
+    const smsUrl = `sms:${cleanPhone}?body=${encodeURIComponent(text)}`;
+    window.location.href = smsUrl;
+  }
+
+  // WYŚWIETLANIE LISTY KLIENTEK
+  function renderClients() {
+    const clients = getStoredClients();
+    const container = document.getElementById('clientsListContainer');
+    const countSpan = document.getElementById('clientsCount');
+
+    countSpan.innerText = clients.length;
+
+    if (clients.length === 0) {
+      container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px 0;">Brak zapisanych klientek.</p>`;
+      return;
+    }
+
+    container.innerHTML = clients.map(client => `
+      <div style="background: var(--bg-main); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <strong style="font-size: 1rem; color: var(--text-main);">${client.name}</strong>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">📞 ${client.phone}</div>
+          </div>
+          <button onclick="deleteClient(${client.id})" style="background: transparent; border: none; color: #a83232; cursor: pointer; padding: 4px;" title="Usuń klientkę">
+            <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+
+        <div style="font-size: 0.82rem; background: #ffffff; padding: 8px; border-radius: var(--radius-sm); border: 1px dashed var(--border); color: #555;">
+          📝 ${client.notes}
+        </div>
+
+        <!-- PRZYCISKI POWIADOMIEŃ -->
+        <div style="display: flex; gap: 6px; margin-top: 4px;">
+          <button onclick="sendNotification('${client.phone}', '${client.name}', 'reminder')" class="btn btn-secondary" style="font-size: 0.75rem; padding: 6px 10px; flex: 1;">
+            <i data-lucide="bell" style="width: 14px;"></i> Przypomnij o wizycie
+          </button>
+          <button onclick="sendNotification('${client.phone}', '${client.name}', 'followup')" class="btn btn-secondary" style="font-size: 0.75rem; padding: 6px 10px; flex: 1;">
+            <i data-lucide="message-square" style="width: 14px;"></i> Zapytaj po wizycie
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    // Ponowne wywołanie ikonek Lucide dla nowo wygenerowanych elementów
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
+  // Wywołaj wczytanie klientek przy pierwszym otwarciu strony
+  document.addEventListener('DOMContentLoaded', renderClients);
+</script>
+
 </body>
 </html>
